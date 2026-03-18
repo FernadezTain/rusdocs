@@ -3,201 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Панель администратора — МетодКнига</title>
+<title>Панель администратора — RusDocs</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #06080f; --bg2: #0b0e1a; --bg3: #111520;
-  --surface: rgba(255,255,255,0.04); --surface2: rgba(255,255,255,0.07);
-  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
-  --text: #eef0f8; --muted: rgba(238,240,248,0.45); --muted2: rgba(238,240,248,0.25);
-  --gold: #e8c96a; --gold2: #f0da8a;
-  --blue: #6eaeff; --teal: #4ecdc4; --red: #ff6b6b; --green: #4ecdc4;
-  --r: 14px; --r-lg: 20px;
+  --bg:#06080f; --bg2:#0b0e1a;
+  --surface:rgba(255,255,255,0.04); --surface2:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --text:#eef0f8; --muted:rgba(238,240,248,0.45); --muted2:rgba(238,240,248,0.25);
+  --gold:#e8c96a; --gold2:#f0da8a;
+  --blue:#6eaeff; --teal:#4ecdc4; --red:#ff6b6b;
+  --r:14px; --r-lg:20px;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5;}
 
-/* ── NOISE ── */
-body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:.5; }
+/* HEADER */
+header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:rgba(6,8,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#c8a040);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900;color:#06080f;}
+.logo-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);}
+.logo-text span{color:var(--gold);}
+.header-badge{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:100px;background:rgba(232,201,106,0.12);border:1px solid rgba(232,201,106,0.28);color:var(--gold);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.back-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--border2);color:var(--muted);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;}
+.back-btn:hover{color:var(--text);}
 
-/* ── HEADER ── */
-header { position:sticky; top:0; z-index:100; height:60px; display:flex; align-items:center; justify-content:space-between; padding:0 2rem; background:rgba(6,8,15,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); }
-.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
-.logo-mark { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--gold),#c8a040); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:.95rem; font-weight:900; color:#06080f; }
-.logo-text { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--text); }
-.logo-text span { color:var(--gold); }
-.header-badge { font-size:.65rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; padding:3px 10px; border-radius:100px; background:rgba(232,201,106,0.12); border:1px solid rgba(232,201,106,0.28); color:var(--gold); }
-.header-right { display:flex; align-items:center; gap:10px; }
-.back-btn { display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:100px; background:var(--surface); border:1px solid var(--border2); color:var(--muted); font-family:'Outfit',sans-serif; font-size:.78rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all .2s; }
-.back-btn:hover { color:var(--text); border-color:var(--border2); }
-.admin-name { font-size:.82rem; color:var(--muted); }
+/* ACCESS DENIED */
+#accessDenied{position:fixed;inset:0;z-index:999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+.denied-icon{font-size:3rem;}
+.denied-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;}
+.denied-text{color:var(--muted);font-size:.9rem;}
+.denied-btn{margin-top:.5rem;padding:10px 24px;border-radius:100px;background:rgba(232,201,106,0.12);border:1px solid rgba(232,201,106,0.3);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;text-decoration:none;font-size:.85rem;}
 
-/* ── ACCESS DENIED ── */
-#accessDenied { position:fixed; inset:0; z-index:999; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; }
-.denied-icon { font-size:3rem; }
-.denied-title { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; }
-.denied-text { color:var(--muted); font-size:.9rem; }
-.denied-btn { margin-top:.5rem; padding:10px 24px; border-radius:100px; background:rgba(232,201,106,0.12); border:1px solid rgba(232,201,106,0.3); color:var(--gold); font-family:'Outfit',sans-serif; font-weight:600; cursor:pointer; text-decoration:none; font-size:.85rem; }
+/* LAYOUT */
+#app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem;display:none;}
 
-/* ── LAYOUT ── */
-#app { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:2rem; display:none; }
+/* MAIN TABS */
+.main-tabs{display:flex;gap:.5rem;margin-bottom:2rem;background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;max-width:420px;}
+.m-tab{flex:1;padding:10px;border:none;background:none;font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-radius:10px;transition:all .22s;}
+.m-tab.active{background:rgba(232,201,106,0.14);color:var(--gold);box-shadow:0 2px 12px rgba(232,201,106,0.15);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .25s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── TABS ── */
-.main-tabs { display:flex; gap:.5rem; margin-bottom:2rem; background:rgba(255,255,255,0.04); border-radius:14px; padding:5px; max-width:440px; }
-.m-tab { flex:1; padding:10px; border:none; background:none; font-family:'Outfit',sans-serif; font-size:.85rem; font-weight:600; color:var(--muted); cursor:pointer; border-radius:10px; transition:all .22s; }
-.m-tab.active { background:rgba(232,201,106,0.14); color:var(--gold); box-shadow:0 2px 12px rgba(232,201,106,0.15); }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:100px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.btn-gold{background:rgba(232,201,106,0.15);border:1px solid rgba(232,201,106,0.35);color:var(--gold);}
+.btn-gold:hover{background:rgba(232,201,106,0.25);}
+.btn-red{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);color:var(--red);}
+.btn-red:hover{background:rgba(255,107,107,0.18);}
+.btn-ghost{background:var(--surface);border:1px solid var(--border2);color:var(--muted);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:6px 12px;font-size:.75rem;}
+.btn-blue{background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.25);color:var(--blue);}
+.btn-blue:hover{background:rgba(110,174,255,0.18);}
 
-.tab-panel { display:none; }
-.tab-panel.active { display:block; animation:fadeUp .25s ease both; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+/* PANEL HEADER */
+.panel-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
+.panel-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;flex:1;}
 
-/* ── SECTION HEADER ── */
-.panel-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1.5rem; flex-wrap:wrap; }
-.panel-title { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; }
-.btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:100px; border:none; cursor:pointer; font-family:'Outfit',sans-serif; font-size:.82rem; font-weight:600; transition:all .2s; -webkit-tap-highlight-color:transparent; }
-.btn-gold { background:rgba(232,201,106,0.15); border:1px solid rgba(232,201,106,0.35); color:var(--gold); }
-.btn-gold:hover { background:rgba(232,201,106,0.25); }
-.btn-red { background:rgba(255,107,107,0.1); border:1px solid rgba(255,107,107,0.25); color:var(--red); }
-.btn-red:hover { background:rgba(255,107,107,0.18); }
-.btn-ghost { background:var(--surface); border:1px solid var(--border2); color:var(--muted); }
-.btn-ghost:hover { color:var(--text); }
-.btn-sm { padding:6px 12px; font-size:.75rem; }
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:.4rem;margin-bottom:1.25rem;font-size:.8rem;color:var(--muted);flex-wrap:wrap;padding:.65rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:100px;}
+.bc-item{cursor:pointer;transition:color .18s;display:flex;align-items:center;gap:4px;}
+.bc-item:hover{color:var(--gold);}
+.bc-sep{opacity:.35;font-size:.75rem;}
+.bc-current{color:var(--text);font-weight:500;}
 
-/* ── BREADCRUMB ── */
-.breadcrumb { display:flex; align-items:center; gap:.5rem; margin-bottom:1.5rem; font-size:.8rem; color:var(--muted); flex-wrap:wrap; }
-.bc-item { cursor:pointer; transition:color .18s; }
-.bc-item:hover { color:var(--gold); }
-.bc-sep { opacity:.4; }
-.bc-current { color:var(--text); font-weight:500; }
+/* CATEGORY GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.85rem;}
+.cat-card{border-radius:var(--r-lg);padding:1.25rem;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .22s cubic-bezier(.22,.68,0,1.3);position:relative;overflow:hidden;}
+.cat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--cc,transparent) 0%,transparent 60%);opacity:.07;}
+.cat-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.18);background:var(--surface2);}
+.cat-icon{font-size:1.8rem;margin-bottom:.65rem;display:block;}
+.cat-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:.3rem;}
+.cat-count{font-size:.7rem;color:var(--muted);}
 
-/* ── CATEGORY GRID ── */
-.cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:.85rem; }
-.cat-card { border-radius:var(--r-lg); padding:1.25rem; background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:all .22s cubic-bezier(.22,.68,0,1.3); position:relative; overflow:hidden; }
-.cat-card:hover { transform:translateY(-3px); border-color:var(--border2); background:var(--surface2); }
-.cat-card-icon { font-size:2rem; margin-bottom:.65rem; display:block; }
-.cat-card-name { font-family:'Playfair Display',serif; font-size:.95rem; font-weight:700; margin-bottom:.25rem; }
-.cat-card-count { font-size:.72rem; color:var(--muted); }
+/* FOLDER/SECTION LIST */
+.items-list{display:flex;flex-direction:column;gap:.5rem;}
+.item-row{display:flex;align-items:center;gap:.85rem;padding:.9rem 1.25rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .2s;}
+.item-row:hover{background:var(--surface2);border-color:var(--border2);transform:translateX(3px);}
+.item-row.is-folder{border-left:3px solid rgba(232,201,106,0.4);}
+.item-row.is-folder:hover{border-left-color:var(--gold);}
+.item-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.item-icon.folder{background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.2);}
+.item-icon.section{background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.18);}
+.item-name{flex:1;font-weight:600;font-size:.88rem;}
+.item-meta{font-size:.68rem;color:var(--muted);white-space:nowrap;}
+.item-arrow{color:var(--muted2);flex-shrink:0;}
 
-/* ── SECTIONS LIST ── */
-.sections-list { display:flex; flex-direction:column; gap:.6rem; }
-.section-row { display:flex; align-items:center; gap:.85rem; padding:1rem 1.25rem; border-radius:var(--r); background:var(--surface); border:1px solid var(--border); cursor:pointer; transition:all .2s; }
-.section-row:hover { background:var(--surface2); border-color:var(--border2); transform:translateX(3px); }
-.section-row-icon { width:36px; height:36px; border-radius:9px; background:rgba(255,255,255,0.06); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
-.section-row-name { flex:1; font-weight:600; font-size:.9rem; }
-.section-row-count { font-size:.72rem; color:var(--muted); }
-.section-row-arrow { color:var(--muted2); }
+/* EDITOR BAR */
+.editor-bar{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding:1rem 1.25rem;border-radius:var(--r);background:rgba(232,201,106,0.06);border:1px solid rgba(232,201,106,0.18);flex-wrap:wrap;}
+.editor-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;flex:1;min-width:140px;}
 
-/* ── SECTION EDITOR ── */
-.editor-bar { display:flex; align-items:center; gap:.6rem; margin-bottom:1.25rem; padding:1rem 1.25rem; border-radius:var(--r); background:rgba(232,201,106,0.06); border:1px solid rgba(232,201,106,0.15); flex-wrap:wrap; }
-.editor-bar-title { font-family:'Playfair Display',serif; font-size:1.1rem; font-weight:700; flex:1; min-width:160px; }
-.files-list { display:flex; flex-direction:column; gap:.5rem; margin-top:1rem; }
-.file-row { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border-radius:var(--r); background:var(--surface); border:1px solid var(--border); }
-.file-row-ico { width:32px; height:32px; border-radius:8px; background:rgba(110,174,255,0.1); border:1px solid rgba(110,174,255,0.2); display:flex; align-items:center; justify-content:center; font-size:.85rem; flex-shrink:0; }
-.file-row-name { flex:1; font-size:.85rem; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.file-row-size { font-size:.7rem; color:var(--muted); white-space:nowrap; }
-.file-row-del { background:none; border:none; cursor:pointer; color:var(--muted2); padding:4px 6px; border-radius:6px; transition:color .18s; display:flex; align-items:center; }
-.file-row-del:hover { color:var(--red); background:rgba(255,107,107,0.1); }
+/* FILES */
+.files-list{display:flex;flex-direction:column;gap:.45rem;margin-top:.75rem;}
+.file-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);}
+.file-ico{width:32px;height:32px;border-radius:8px;background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.18);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
+.file-name{flex:1;font-size:.83rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.file-size{font-size:.68rem;color:var(--muted);white-space:nowrap;}
+.file-open{color:var(--blue);font-size:.7rem;text-decoration:none;padding:4px 9px;border-radius:7px;background:rgba(110,174,255,0.08);border:1px solid rgba(110,174,255,0.18);white-space:nowrap;transition:background .18s;}
+.file-open:hover{background:rgba(110,174,255,0.16);}
+.file-del{background:none;border:none;cursor:pointer;color:var(--muted2);padding:5px 7px;border-radius:7px;transition:all .18s;display:flex;align-items:center;flex-shrink:0;}
+.file-del:hover{color:var(--red);background:rgba(255,107,107,0.1);}
 
-/* ── UPLOAD AREA ── */
-.upload-zone { border:2px dashed rgba(232,201,106,0.25); border-radius:var(--r-lg); padding:2rem; text-align:center; cursor:pointer; transition:all .2s; background:rgba(232,201,106,0.02); margin-bottom:1rem; }
-.upload-zone:hover, .upload-zone.drag { border-color:rgba(232,201,106,0.5); background:rgba(232,201,106,0.06); }
-.upload-zone-icon { font-size:2.2rem; margin-bottom:.65rem; display:block; opacity:.6; }
-.upload-zone-text { font-size:.85rem; color:var(--muted); line-height:1.6; }
-.upload-zone-text strong { color:var(--gold); }
-#fileInput { display:none; }
-.upload-queue { display:flex; flex-direction:column; gap:.4rem; margin-top:.75rem; }
-.queue-item { display:flex; align-items:center; gap:.65rem; padding:.55rem .85rem; border-radius:10px; background:var(--surface); border:1px solid var(--border); font-size:.8rem; }
-.queue-item-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.queue-item-size { color:var(--muted); font-size:.7rem; white-space:nowrap; }
-.queue-item-remove { background:none; border:none; cursor:pointer; color:var(--muted2); font-size:1rem; line-height:1; transition:color .15s; padding:2px 4px; }
-.queue-item-remove:hover { color:var(--red); }
-.upload-progress { height:3px; border-radius:100px; background:rgba(255,255,255,0.07); overflow:hidden; margin-top:.4rem; }
-.upload-progress-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:100px; transition:width .3s; }
+/* UPLOAD */
+.upload-zone{border:2px dashed rgba(232,201,106,0.25);border-radius:var(--r-lg);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(232,201,106,0.02);margin-bottom:.85rem;}
+.upload-zone:hover,.upload-zone.drag{border-color:rgba(232,201,106,0.55);background:rgba(232,201,106,0.07);}
+.upload-zone-ico{font-size:2.2rem;margin-bottom:.5rem;display:block;opacity:.55;}
+.upload-zone-text{font-size:.83rem;color:var(--muted);line-height:1.6;}
+.upload-zone-text strong{color:var(--gold);}
+#fileInput{display:none;}
+.queue-wrap{display:flex;flex-direction:column;gap:.4rem;max-height:200px;overflow-y:auto;}
+.queue-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .85rem;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:.78rem;}
+.queue-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.queue-item-size{color:var(--muted);font-size:.68rem;white-space:nowrap;}
+.queue-remove{background:none;border:none;cursor:pointer;color:var(--muted2);font-size:1rem;line-height:1;padding:1px 5px;transition:color .15s;}
+.queue-remove:hover{color:var(--red);}
+.progress-bar{height:3px;border-radius:100px;background:rgba(255,255,255,0.07);overflow:hidden;margin-top:.5rem;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:100px;transition:width .35s;}
 
-/* ── USERS ── */
-.users-search-wrap { position:relative; margin-bottom:1.25rem; }
-.users-search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--muted2); pointer-events:none; }
-.users-search { width:100%; max-width:420px; padding:11px 14px 11px 42px; background:var(--surface); border:1px solid var(--border2); border-radius:100px; font-family:'Outfit',sans-serif; font-size:.88rem; color:var(--text); outline:none; transition:border-color .2s; }
-.users-search::placeholder { color:var(--muted2); }
-.users-search:focus { border-color:rgba(232,201,106,0.4); }
-.users-list { display:flex; flex-direction:column; gap:.5rem; }
-.user-row { display:flex; align-items:center; gap:.85rem; padding:.9rem 1.25rem; border-radius:var(--r); background:var(--surface); border:1px solid var(--border); transition:border-color .2s; }
-.user-row:hover { border-color:var(--border2); }
-.user-av { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--gold),#c8a040); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-weight:700; font-size:.85rem; color:#06080f; flex-shrink:0; }
-.user-info { flex:1; min-width:0; }
-.user-nick { font-weight:600; font-size:.9rem; }
-.user-date { font-size:.67rem; color:var(--muted2); margin-top:.1rem; }
-.role-badge { font-size:.62rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:3px 10px; border-radius:100px; white-space:nowrap; }
-.role-user  { background:rgba(110,174,255,0.1); border:1px solid rgba(110,174,255,0.22); color:var(--blue); }
-.role-admin { background:rgba(232,201,106,0.1); border:1px solid rgba(232,201,106,0.25); color:var(--gold); }
-.edit-btn { width:32px; height:32px; border-radius:8px; background:var(--surface2); border:1px solid var(--border2); color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .2s; flex-shrink:0; }
-.edit-btn:hover { color:var(--gold); border-color:rgba(232,201,106,0.3); background:rgba(232,201,106,0.08); }
+/* USERS */
+.users-search-wrap{position:relative;margin-bottom:1.25rem;}
+.users-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none;}
+.users-search{width:100%;max-width:420px;padding:11px 14px 11px 42px;background:var(--surface);border:1px solid var(--border2);border-radius:100px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;}
+.users-search::placeholder{color:var(--muted2);}
+.users-search:focus{border-color:rgba(232,201,106,0.4);}
+.users-list{display:flex;flex-direction:column;gap:.5rem;}
+.user-row{display:flex;align-items:center;gap:.85rem;padding:.9rem 1.25rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);transition:border-color .2s;}
+.user-row:hover{border-color:var(--border2);}
+.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#c8a040);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:.85rem;color:#06080f;flex-shrink:0;}
+.user-info{flex:1;min-width:0;}
+.user-nick{font-weight:600;font-size:.88rem;}
+.user-date{font-size:.65rem;color:var(--muted2);margin-top:.1rem;}
+.role-badge{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;white-space:nowrap;}
+.role-user {background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.22);color:var(--blue);}
+.role-admin{background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.25);color:var(--gold);}
+.edit-btn{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.edit-btn:hover{color:var(--gold);border-color:rgba(232,201,106,0.3);background:rgba(232,201,106,0.08);}
 
-/* ── MODAL ── */
-.overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.75); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; padding:1rem; opacity:0; pointer-events:none; transition:opacity .22s; }
-.overlay.show { opacity:1; pointer-events:all; }
-.modal { width:100%; max-width:440px; background:rgba(11,14,26,0.98); border:1px solid var(--border2); border-radius:24px; padding:1.75rem; box-shadow:0 40px 80px rgba(0,0,0,.7); transform:scale(.93) translateY(12px); transition:transform .28s cubic-bezier(.22,.68,0,1.3); position:relative; overflow:visible; }
-.modal::before { content:''; position:absolute; top:0; left:8%; right:8%; height:1px; background:linear-gradient(90deg,transparent,rgba(232,201,106,.5) 35%,rgba(255,255,255,.8) 50%,rgba(232,201,106,.5) 65%,transparent); }
-.overlay.show .modal { transform:scale(1) translateY(0); }
-.modal-title { font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; margin-bottom:1.5rem; }
-.modal-close { position:absolute; top:1.25rem; right:1.25rem; background:none; border:none; cursor:pointer; color:var(--muted); font-size:1.1rem; padding:4px 7px; transition:color .18s; line-height:1; }
-.modal-close:hover { color:var(--text); }
-.field-group { display:flex; flex-direction:column; gap:.4rem; margin-bottom:1rem; }
-.field-label { font-size:.65rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted2); }
-.field-input { padding:11px 14px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:11px; font-family:'Outfit',sans-serif; font-size:.88rem; color:var(--text); outline:none; transition:all .2s; width:100%; }
-.field-input::placeholder { color:var(--muted2); }
-.field-input:focus { border-color:rgba(232,201,106,.45); background:rgba(232,201,106,.04); box-shadow:0 0 0 3px rgba(232,201,106,.08); }
-.role-selector { display:flex; gap:.5rem; }
-.role-opt { flex:1; padding:9px; border-radius:10px; border:1px solid var(--border2); background:var(--surface); cursor:pointer; font-family:'Outfit',sans-serif; font-size:.8rem; font-weight:600; color:var(--muted); transition:all .2s; text-align:center; }
-.role-opt.active.user  { background:rgba(110,174,255,0.12); border-color:rgba(110,174,255,0.3); color:var(--blue); }
-.role-opt.active.admin { background:rgba(232,201,106,0.12); border-color:rgba(232,201,106,0.3); color:var(--gold); }
-.modal-btns { display:flex; gap:.6rem; margin-top:1.5rem; }
-.modal-btns .btn { flex:1; justify-content:center; border-radius:11px; padding:11px; font-size:.85rem; }
-.modal-msg { font-size:.78rem; min-height:16px; margin-top:.5rem; }
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.78);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .22s;}
+.overlay.show{opacity:1;pointer-events:all;}
+.modal{width:100%;max-width:460px;background:rgba(11,14,26,0.98);border:1px solid var(--border2);border-radius:24px;padding:1.75rem;box-shadow:0 40px 80px rgba(0,0,0,.75);transform:scale(.93) translateY(12px);transition:transform .28s cubic-bezier(.22,.68,0,1.3);position:relative;}
+.modal::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,201,106,.5) 35%,rgba(255,255,255,.8) 50%,rgba(232,201,106,.5) 65%,transparent);}
+.overlay.show .modal{transform:scale(1) translateY(0);}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1.35rem;}
+.modal-close{position:absolute;top:1.25rem;right:1.25rem;background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;padding:4px 7px;transition:color .18s;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.field-group{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem;}
+.field-label{font-size:.63rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);}
+.field-input{padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:11px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:all .2s;width:100%;}
+.field-input::placeholder{color:var(--muted2);}
+.field-input:focus{border-color:rgba(232,201,106,.45);background:rgba(232,201,106,.04);box-shadow:0 0 0 3px rgba(232,201,106,.08);}
+.role-selector{display:flex;gap:.5rem;}
+.role-opt{flex:1;padding:9px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;text-align:center;}
+.role-opt.active.user {background:rgba(110,174,255,0.12);border-color:rgba(110,174,255,0.3);color:var(--blue);}
+.role-opt.active.admin{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
+.modal-btns{display:flex;gap:.6rem;margin-top:1.35rem;}
+.modal-btns .btn{flex:1;justify-content:center;border-radius:11px;padding:11px;font-size:.85rem;}
+.modal-msg{font-size:.77rem;min-height:16px;margin-top:.4rem;}
 
-/* ── NEW SECTION MODAL ── */
-.cat-select-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.5rem; }
-.cat-opt { padding:9px 12px; border-radius:10px; border:1px solid var(--border2); background:var(--surface); cursor:pointer; font-family:'Outfit',sans-serif; font-size:.78rem; font-weight:600; color:var(--muted); transition:all .2s; text-align:center; display:flex; align-items:center; gap:7px; }
-.cat-opt.active { background:rgba(232,201,106,0.12); border-color:rgba(232,201,106,0.3); color:var(--gold); }
+/* Cat select grid */
+.cat-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem;}
+.cat-opt{padding:8px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px;}
+.cat-opt:hover{border-color:var(--border2);color:var(--text);}
+.cat-opt.active{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
 
-/* ── STATES ── */
-.spinner { width:28px; height:28px; border-radius:50%; border:2px solid rgba(232,201,106,.15); border-top-color:var(--gold); animation:spin .85s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.state-load { display:flex; align-items:center; gap:.75rem; color:var(--muted); font-size:.85rem; padding:2rem 0; }
-.state-empty { text-align:center; padding:3rem 1rem; color:var(--muted); font-size:.85rem; }
-.state-empty-icon { font-size:2.5rem; display:block; margin-bottom:.75rem; opacity:.35; }
+/* Type selector */
+.type-selector{display:flex;gap:.5rem;margin-bottom:.9rem;}
+.type-opt{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.type-opt .type-ico{font-size:1.3rem;}
+.type-opt.active{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
 
-/* ── TOAST ── */
-#toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(11,14,26,.96); border:1px solid var(--border2); border-radius:100px; padding:10px 20px; font-size:.82rem; font-weight:500; color:var(--text); box-shadow:0 8px 32px rgba(0,0,0,.5); z-index:9999; opacity:0; pointer-events:none; transition:opacity .3s; white-space:nowrap; backdrop-filter:blur(12px); }
-#toast.show { opacity:1; }
+/* States */
+.spinner{width:26px;height:26px;border-radius:50%;border:2px solid rgba(232,201,106,.15);border-top-color:var(--gold);animation:spin .85s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-load{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.83rem;padding:1.5rem 0;}
+.state-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.83rem;}
+.state-empty-icon{font-size:2.5rem;display:block;margin-bottom:.65rem;opacity:.35;}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(11,14,26,.96);border:1px solid var(--border2);border-radius:100px;padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;backdrop-filter:blur(12px);}
+#toast.show{opacity:1;}
 
 @media(max-width:640px){
-  #app { padding:1rem; }
-  .cat-grid { grid-template-columns:1fr 1fr; }
-  header { padding:0 1rem; }
+  #app{padding:1rem;}
+  header{padding:0 1rem;}
+  .cat-grid{grid-template-columns:1fr 1fr;}
+  .cat-select-grid{grid-template-columns:1fr 1fr;}
 }
 </style>
 </head>
 <body>
 
-<!-- ACCESS DENIED (показывается если не админ) -->
-<div id="accessDenied" style="display:none">
+<div id="accessDenied">
   <div class="denied-icon">🔒</div>
   <div class="denied-title">Нет доступа</div>
-  <div class="denied-text">Эта страница только для администраторов</div>
+  <div class="denied-text">Только для администраторов</div>
   <a href="/" class="denied-btn">← На главную</a>
 </div>
 
 <header>
   <a href="/" class="logo">
-    <div class="logo-mark">М</div>
-    <div class="logo-text">Метод<span>Книга</span></div>
+    <div class="logo-mark">Р</div>
+    <div class="logo-text">Рус<span>Docs</span></div>
   </a>
   <div class="header-right">
-    <span class="header-badge">ADMIN PANEL</span>
-    <span class="admin-name" id="adminNameLabel"></span>
+    <span class="header-badge">ADMIN</span>
     <a href="/" class="back-btn">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
       На сайт
@@ -206,127 +221,136 @@ header { position:sticky; top:0; z-index:100; height:60px; display:flex; align-i
 </header>
 
 <div id="app">
-  <!-- MAIN TABS -->
   <div class="main-tabs">
     <button class="m-tab active" onclick="switchTab('files')">📂 Файлы</button>
     <button class="m-tab" onclick="switchTab('users')">👥 Пользователи</button>
   </div>
 
-  <!-- ═══ TAB: FILES ═══ -->
+  <!-- ═══ FILES TAB ═══ -->
   <div class="tab-panel active" id="tab-files">
     <div class="panel-header">
       <div class="panel-title" id="filesTitle">Управление файлами</div>
-      <button class="btn btn-gold" onclick="openNewSectionModal()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Добавить раздел
+      <button class="btn btn-gold" id="addBtn" onclick="openAddModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="addBtnLabel">Добавить</span>
       </button>
     </div>
 
-    <!-- Breadcrumb -->
     <div class="breadcrumb" id="breadcrumb">
-      <span class="bc-current">Категории</span>
+      <span class="bc-current">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Категории
+      </span>
     </div>
 
-    <!-- View: Categories -->
+    <!-- Категории -->
     <div id="view-cats">
       <div class="cat-grid" id="catGrid">
-        <div class="state-load"><div class="spinner"></div> Загрузка...</div>
+        <div class="state-load"><div class="spinner"></div>Загрузка...</div>
       </div>
     </div>
 
-    <!-- View: Sections list -->
-    <div id="view-sections" style="display:none">
-      <div class="sections-list" id="sectionsList">
-        <div class="state-load"><div class="spinner"></div> Загрузка...</div>
-      </div>
+    <!-- Список папок/разделов -->
+    <div id="view-items" style="display:none">
+      <div class="items-list" id="itemsList"></div>
     </div>
 
-    <!-- View: Section editor -->
+    <!-- Редактор раздела -->
     <div id="view-editor" style="display:none">
       <div class="editor-bar">
-        <div class="editor-bar-title" id="editorTitle">Раздел</div>
+        <div class="editor-title" id="editorTitle">Раздел</div>
         <button class="btn btn-gold btn-sm" onclick="openUploadModal()">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Добавить файлы
         </button>
-        <button class="btn btn-red btn-sm" onclick="deleteSection()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-          Удалить раздел
+        <button class="btn btn-red btn-sm" onclick="deleteCurrentSection()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Удалить
         </button>
       </div>
-      <div class="files-list" id="filesList">
-        <div class="state-load"><div class="spinner"></div> Загрузка...</div>
-      </div>
+      <div class="files-list" id="filesList"></div>
     </div>
   </div>
 
-  <!-- ═══ TAB: USERS ═══ -->
+  <!-- ═══ USERS TAB ═══ -->
   <div class="tab-panel" id="tab-users">
     <div class="panel-header">
       <div class="panel-title">Пользователи</div>
     </div>
     <div class="users-search-wrap">
       <div class="users-search-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </div>
       <input class="users-search" id="usersSearch" placeholder="Поиск по нику..." oninput="loadUsers()">
     </div>
     <div class="users-list" id="usersList">
-      <div class="state-load"><div class="spinner"></div> Загрузка...</div>
+      <div class="state-load"><div class="spinner"></div>Загрузка...</div>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL: NEW SECTION ═══ -->
-<div class="overlay" id="newSectionModal">
+<!-- MODAL: ADD (папка или раздел) -->
+<div class="overlay" id="addModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('newSectionModal')">✕</button>
-    <div class="modal-title">Новый раздел</div>
-    <div class="field-group">
-      <div class="field-label">Название раздела</div>
-      <input class="field-input" id="newSectionTitle" placeholder="Введите название...">
+    <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    <div class="modal-title" id="addModalTitle">Добавить</div>
+
+    <!-- Тип (только на уровне категории) -->
+    <div id="typeSelectWrap">
+      <div class="field-label" style="margin-bottom:.5rem">Тип</div>
+      <div class="type-selector">
+        <button class="type-opt active" id="typeFolder" onclick="selectType('folder')">
+          <span class="type-ico">📁</span>Папка
+        </button>
+        <button class="type-opt" id="typeSection" onclick="selectType('section')">
+          <span class="type-ico">📄</span>Раздел с файлами
+        </button>
+      </div>
     </div>
+
     <div class="field-group">
+      <div class="field-label">Название</div>
+      <input class="field-input" id="addTitle" placeholder="Введите название...">
+    </div>
+
+    <!-- Выбор категории (только на верхнем уровне) -->
+    <div id="catSelectWrap" class="field-group" style="display:none">
       <div class="field-label">Категория</div>
       <div class="cat-select-grid" id="catSelectGrid"></div>
     </div>
-    <div class="modal-msg" id="newSectionMsg" style="color:var(--red)"></div>
+
+    <div class="modal-msg" id="addMsg" style="color:var(--red)"></div>
     <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('newSectionModal')">Отмена</button>
-      <button class="btn btn-gold" onclick="createSection()">Создать →</button>
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Отмена</button>
+      <button class="btn btn-gold" onclick="doAdd()">Создать →</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL: UPLOAD FILES ═══ -->
+<!-- MODAL: UPLOAD -->
 <div class="overlay" id="uploadModal">
   <div class="modal" style="max-width:500px">
     <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
     <div class="modal-title">Загрузка файлов</div>
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="e=>e.preventDefault()" ondrop="handleDrop(event)">
-      <span class="upload-zone-icon">📂</span>
-      <div class="upload-zone-text">
-        <strong>Нажми или перетащи файлы</strong><br>
-        PDF, DOCX, PPTX, XLSX и другие
-      </div>
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <span class="upload-zone-ico">📂</span>
+      <div class="upload-zone-text"><strong>Нажми или перетащи файлы</strong><br>PDF, DOCX, PPTX, XLSX и другие</div>
     </div>
-    <input type="file" id="fileInput" multiple onchange="addFilesToQueue(this.files)">
-    <div class="upload-queue" id="uploadQueue"></div>
-    <div class="upload-progress" id="uploadProgressWrap" style="display:none">
-      <div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div>
-    </div>
+    <input type="file" id="fileInput" multiple onchange="addToQueue(this.files)">
+    <div class="queue-wrap" id="uploadQueue"></div>
+    <div class="progress-bar" id="progressBar" style="display:none"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     <div class="modal-msg" id="uploadMsg" style="color:var(--muted)"></div>
     <div class="modal-btns">
       <button class="btn btn-ghost" onclick="closeModal('uploadModal')">Отмена</button>
-      <button class="btn btn-gold" id="uploadSubmitBtn" onclick="uploadFiles()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <button class="btn btn-gold" id="uploadBtn" onclick="doUpload()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Загрузить
       </button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL: EDIT USER ═══ -->
+<!-- MODAL: EDIT USER -->
 <div class="overlay" id="editUserModal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal('editUserModal')">✕</button>
@@ -337,7 +361,7 @@ header { position:sticky; top:0; z-index:100; height:60px; display:flex; align-i
     </div>
     <div class="field-group">
       <div class="field-label">Password</div>
-      <input class="field-input" id="editPassword" placeholder="Установлен (оставь пустым чтобы не менять)">
+      <input class="field-input" id="editPassword" type="password" placeholder="Установлен (оставь пустым чтобы не менять)">
     </div>
     <div class="field-group">
       <div class="field-label">Status</div>
@@ -357,433 +381,402 @@ header { position:sticky; top:0; z-index:100; height:60px; display:flex; align-i
 <div id="toast"></div>
 
 <script>
-const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? `http://${location.hostname}:3000` : '';
+const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? `http://${location.hostname}:3000` : '';
 
-const CATEGORIES = {
-  math:        { label: 'Математика',  icon: '∑',  color: '#7eb8ff' },
-  physics:     { label: 'Физика',      icon: '⚛',  color: '#b48dff' },
-  chemistry:   { label: 'Химия',       icon: '⚗',  color: '#4ecdc4' },
-  history:     { label: 'История',     icon: '📜', color: '#ffb87a' },
-  biology:     { label: 'Биология',    icon: '🧬', color: '#7de8a0' },
-  literature:  { label: 'Литература',  icon: '📖', color: '#ff9ed2' },
-  informatics: { label: 'Информатика', icon: '💻', color: '#7eb8ff' },
-  geography:   { label: 'География',   icon: '🌍', color: '#4ecdc4' },
+const CATS = {
+  russian:    {label:'Русский язык',       icon:'Я',   color:'#e8c96a'},
+  literature: {label:'Литература',          icon:'📖',  color:'#ff9ed2'},
+  folklore:   {label:'Фольклор',            icon:'🎭',  color:'#b48dff'},
+  classical:  {label:'Классика XIX века',   icon:'🪶',  color:'#7eb8ff'},
+  modern:     {label:'Литература XX–XXI в.',icon:'✍️',  color:'#4ecdc4'},
+  foreign:    {label:'Зарубежная лит-ра',   icon:'🌍',  color:'#7de8a0'},
+  theory:     {label:'Теория литературы',   icon:'📐',  color:'#ffb87a'},
+  essays:     {label:'Сочинения и эссе',    icon:'📝',  color:'#ff9ed2'},
 };
 
-const EXT_ICONS = { pdf:'📄', doc:'📝', docx:'📝', ppt:'📊', pptx:'📊', xls:'📈', xlsx:'📈', txt:'📃', zip:'🗜️', rar:'🗜️', jpg:'🖼️', png:'🖼️', mp4:'🎬', mp3:'🎵' };
-function extIcon(e) { return EXT_ICONS[e?.toLowerCase()] || '📁'; }
-function fmtSize(b) { if(!b)return'—'; if(b<1024)return b+'Б'; if(b<1048576)return(b/1024).toFixed(0)+'КБ'; return(b/1048576).toFixed(1)+'МБ'; }
-function fmtDate(iso) { return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'}); }
+const EXT_ICONS={pdf:'📄',doc:'📝',docx:'📝',ppt:'📊',pptx:'📊',xls:'📈',xlsx:'📈',txt:'📃',zip:'🗜️',rar:'🗜️',jpg:'🖼️',png:'🖼️',mp4:'🎬',mp3:'🎵'};
+const extIcon = e => EXT_ICONS[e?.toLowerCase()]||'📁';
+const fmtSize = b => !b?'—':b<1024?b+'Б':b<1048576?(b/1024).toFixed(0)+'КБ':(b/1048576).toFixed(1)+'МБ';
+const fmtDate = iso => new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
 
-// ══ AUTH CHECK ══
+// ══ AUTH ══
 let currentUser = null;
-
-(function init() {
-  try { currentUser = JSON.parse(localStorage.getItem('methbook_user')); } catch {}
-  if (!currentUser || currentUser.role !== 'admin') {
-    document.getElementById('accessDenied').style.display = 'flex';
+(function init(){
+  try { currentUser = JSON.parse(localStorage.getItem('methbook_user')); } catch{}
+  if(!currentUser||currentUser.role!=='admin'){
+    document.getElementById('accessDenied').style.display='flex';
     return;
   }
-  document.getElementById('adminNameLabel').textContent = currentUser.username;
-  document.getElementById('app').style.display = 'block';
-  loadCats();
+  document.getElementById('app').style.display='block';
+  renderCats();
   loadUsers();
 })();
 
-function apiHeaders() {
-  return { 'Content-Type': 'application/json', 'x-user-id': currentUser?.id || '' };
-}
+const apiH = () => ({'Content-Type':'application/json','x-user-id':currentUser?.id||''});
 
 // ══ TABS ══
-function switchTab(tab) {
-  document.querySelectorAll('.m-tab').forEach((b,i) => b.classList.toggle('active', ['files','users'][i] === tab));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
+function switchTab(tab){
+  document.querySelectorAll('.m-tab').forEach((b,i)=>b.classList.toggle('active',['files','users'][i]===tab));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
 }
 
-// ══ FILES / BREADCRUMB ══
-let activeCat = null, activeSection = null;
+// ══ NAVIGATION STATE ══
+// stack of {type:'cat'|'folder'|'section', id, label, category}
+let navStack = [];
+let activeSection = null; // раздел с файлами
 
-function setView(view) {
-  ['cats','sections','editor'].forEach(v => document.getElementById('view-'+v).style.display = v===view?'':'none');
-}
+function currentLevel(){ return navStack[navStack.length-1] || null; }
 
-function updateBreadcrumb() {
+function renderBreadcrumb(){
   const bc = document.getElementById('breadcrumb');
-  let html = `<span class="bc-item" onclick="gotoCats()">Категории</span>`;
-  if (activeCat) {
-    const meta = CATEGORIES[activeCat] || { label: activeCat };
+  let html = `<span class="bc-item" onclick="goTo(-1)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Категории</span>`;
+  navStack.forEach((item,i)=>{
     html += `<span class="bc-sep">›</span>`;
-    if (activeSection) html += `<span class="bc-item" onclick="gotoSections()">${meta.icon} ${meta.label}</span>`;
-    else html += `<span class="bc-current">${meta.icon} ${meta.label}</span>`;
-  }
-  if (activeSection) {
-    html += `<span class="bc-sep">›</span><span class="bc-current">${activeSection.title}</span>`;
-  }
+    if(i<navStack.length-1) html+=`<span class="bc-item" onclick="goTo(${i})">${item.label}</span>`;
+    else html+=`<span class="bc-current">${item.label}</span>`;
+  });
   bc.innerHTML = html;
 }
 
-function gotoCats() {
-  activeCat = null; activeSection = null;
-  document.getElementById('filesTitle').textContent = 'Управление файлами';
-  setView('cats'); updateBreadcrumb(); loadCats();
-}
-function gotoSections() {
+function goTo(idx){
+  if(idx===-1){ navStack=[]; activeSection=null; showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn(); return; }
+  navStack = navStack.slice(0,idx+1);
   activeSection = null;
-  document.getElementById('filesTitle').textContent = CATEGORIES[activeCat]?.label || activeCat;
-  setView('sections'); updateBreadcrumb(); loadSections(activeCat);
+  const level = navStack[idx];
+  if(level.type==='cat'||level.type==='folder'){
+    showView('items'); loadItems(level.category, level.type==='cat'?null:level.id);
+  }
+  renderBreadcrumb(); updateAddBtn();
 }
 
-async function loadCats() {
-  const grid = document.getElementById('catGrid');
-  grid.innerHTML = '<div class="state-load"><div class="spinner"></div> Загрузка...</div>';
-  const frag = document.createDocumentFragment();
-  for (const [slug, meta] of Object.entries(CATEGORIES)) {
-    // Считаем разделы
-    let count = 0;
-    try {
-      const r = await fetch(`${API}/api/sections?category=${slug}`);
-      const d = await r.json();
-      count = d.sections?.length || 0;
-    } catch {}
-    const div = document.createElement('div');
-    div.className = 'cat-card';
-    div.style.setProperty('--c', meta.color);
-    div.style.borderColor = count ? `${meta.color}30` : '';
-    div.innerHTML = `<span class="cat-card-icon">${meta.icon}</span><div class="cat-card-name">${meta.label}</div><div class="cat-card-count">${count} разд${count===1?'ел':'елов'}</div>`;
-    div.onclick = () => { activeCat = slug; gotoSections(); };
+function showView(v){
+  ['cats','items','editor'].forEach(x=>document.getElementById('view-'+x).style.display=x===v?'':'none');
+}
+
+function updateAddBtn(){
+  const lbl = document.getElementById('addBtnLabel');
+  const level = currentLevel();
+  if(!level){ lbl.textContent='Добавить'; return; }
+  if(level.type==='section'){ lbl.textContent='Добавить файлы'; document.getElementById('addBtn').onclick=openUploadModal; return; }
+  lbl.textContent='Добавить';
+  document.getElementById('addBtn').onclick=openAddModal;
+}
+
+// ══ CATEGORIES ══
+async function renderCats(){
+  showView('cats');
+  const grid=document.getElementById('catGrid');
+  grid.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
+  // Считаем разделы на верхнем уровне для каждой категории
+  const counts={};
+  await Promise.all(Object.keys(CATS).map(async slug=>{
+    try{
+      const r=await fetch(`${API}/api/sections?category=${slug}&parent_id=null`);
+      const d=await r.json();
+      counts[slug]=(d.sections||[]).length;
+    }catch{counts[slug]=0;}
+  }));
+  grid.innerHTML='';
+  const frag=document.createDocumentFragment();
+  Object.entries(CATS).forEach(([slug,meta])=>{
+    const div=document.createElement('div');
+    div.className='cat-card';
+    div.style.setProperty('--cc',meta.color);
+    div.innerHTML=`<span class="cat-icon">${meta.icon}</span><div class="cat-name">${meta.label}</div><div class="cat-count">${counts[slug]||0} элементов</div>`;
+    div.onclick=()=>enterCat(slug,meta.label);
     frag.appendChild(div);
-  }
-  grid.innerHTML = '';
+  });
   grid.appendChild(frag);
 }
 
-async function loadSections(cat) {
-  const list = document.getElementById('sectionsList');
-  list.innerHTML = '<div class="state-load"><div class="spinner"></div></div>';
-  try {
-    const r = await fetch(`${API}/api/sections?category=${cat}`);
-    const d = await r.json();
-    const sections = d.sections || [];
-    if (!sections.length) {
-      list.innerHTML = '<div class="state-empty"><span class="state-empty-icon">📂</span>Разделов нет. Создай первый!</div>';
+function enterCat(slug,label){
+  navStack=[{type:'cat',id:null,label,category:slug}];
+  activeSection=null;
+  showView('items');
+  loadItems(slug,null);
+  renderBreadcrumb();
+  updateAddBtn();
+  document.getElementById('filesTitle').textContent=label;
+}
+
+// ══ ITEMS LIST (папки + разделы) ══
+async function loadItems(category, parentId){
+  const list=document.getElementById('itemsList');
+  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
+  try{
+    const pidParam = parentId ? `&parent_id=${parentId}` : `&parent_id=null`;
+    const r=await fetch(`${API}/api/sections?category=${category}${pidParam}`);
+    const d=await r.json();
+    const items=d.sections||[];
+    if(!items.length){
+      list.innerHTML='<div class="state-empty"><span class="state-empty-icon">📂</span>Пусто. Создай папку или раздел!</div>';
       return;
     }
-    const frag = document.createDocumentFragment();
-    sections.forEach(sec => {
-      const div = document.createElement('div');
-      div.className = 'section-row';
-      div.innerHTML = `<div class="section-row-icon">📁</div><div class="section-row-name">${sec.title}</div><div class="section-row-count" id="sc-${sec.id}">...</div><svg class="section-row-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
-      div.onclick = () => openEditor(sec);
+    const frag=document.createDocumentFragment();
+    for(const item of items){
+      // Определяем тип: если у него есть дочерние элементы — папка, иначе раздел
+      // Используем поле is_folder (если нет — смотрим по наличию дочерних)
+      const div=document.createElement('div');
+      const isFolder = item.is_folder || false;
+      div.className='item-row'+(isFolder?' is-folder':'');
+      div.innerHTML=`
+        <div class="item-icon ${isFolder?'folder':'section'}">${isFolder?'📁':'📄'}</div>
+        <div class="item-name">${item.title}</div>
+        <div class="item-meta">${fmtDate(item.created_at)}</div>
+        <svg class="item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+      div.onclick=()=>enterItem(item, isFolder, category);
       frag.appendChild(div);
-      // Подгружаем кол-во файлов
-      fetch(`${API}/api/files-db?section_id=${sec.id}`)
-        .then(r=>r.json()).then(d=>{
-          const el = document.getElementById('sc-'+sec.id);
-          if(el) el.textContent = (d.files?.length||0)+' файл'+((d.files?.length||0)===1?'':'ов');
-        }).catch(()=>{});
-    });
-    list.innerHTML = '';
-    list.appendChild(frag);
-  } catch (e) { list.innerHTML = `<div class="state-empty">Ошибка: ${e.message}</div>`; }
-}
-
-async function openEditor(sec) {
-  activeSection = sec;
-  document.getElementById('editorTitle').textContent = sec.title;
-  document.getElementById('filesTitle').textContent = sec.title;
-  setView('editor'); updateBreadcrumb();
-  loadSectionFiles(sec.id);
-}
-
-async function loadSectionFiles(sectionId) {
-  const list = document.getElementById('filesList');
-  list.innerHTML = '<div class="state-load"><div class="spinner"></div></div>';
-  try {
-    const r = await fetch(`${API}/api/files-db?section_id=${sectionId}`);
-    const d = await r.json();
-    const files = d.files || [];
-    if (!files.length) {
-      list.innerHTML = '<div class="state-empty"><span class="state-empty-icon">📄</span>Файлов нет. Добавь первый!</div>';
-      return;
     }
-    const frag = document.createDocumentFragment();
-    files.forEach(f => {
-      const ext = f.ext || f.original_name?.split('.').pop() || '';
-      const div = document.createElement('div');
-      div.className = 'file-row';
-      div.innerHTML = `<div class="file-row-ico">${extIcon(ext)}</div><div class="file-row-name" title="${f.original_name}">${f.original_name}</div><div class="file-row-size">${fmtSize(f.size)}</div><a href="${f.url}" target="_blank" style="color:var(--blue);font-size:.72rem;text-decoration:none;white-space:nowrap;padding:4px 8px;border-radius:7px;background:rgba(110,174,255,0.08);border:1px solid rgba(110,174,255,0.18)">↗ Открыть</a><button class="file-row-del" onclick="deleteFile('${f.id}',this.closest('.file-row'))" title="Удалить"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>`;
+    list.innerHTML='';
+    list.appendChild(frag);
+  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
+}
+
+function enterItem(item, isFolder, category){
+  if(isFolder){
+    navStack.push({type:'folder',id:item.id,label:item.title,category});
+    showView('items');
+    loadItems(category, item.id);
+  } else {
+    navStack.push({type:'section',id:item.id,label:item.title,category});
+    activeSection=item;
+    document.getElementById('editorTitle').textContent=item.title;
+    document.getElementById('filesTitle').textContent=item.title;
+    showView('editor');
+    loadSectionFiles(item.id);
+    updateAddBtn();
+  }
+  renderBreadcrumb();
+  updateAddBtn();
+}
+
+// ══ FILES ══
+async function loadSectionFiles(sectionId){
+  const list=document.getElementById('filesList');
+  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
+  try{
+    const r=await fetch(`${API}/api/files-db?section_id=${sectionId}`);
+    const d=await r.json();
+    const files=d.files||[];
+    if(!files.length){list.innerHTML='<div class="state-empty"><span class="state-empty-icon">📄</span>Файлов нет</div>';return;}
+    const frag=document.createDocumentFragment();
+    files.forEach(f=>{
+      const ext=f.ext||f.original_name?.split('.').pop()||'';
+      const div=document.createElement('div');div.className='file-row';
+      div.innerHTML=`<div class="file-ico">${extIcon(ext)}</div><div class="file-name" title="${f.original_name}">${f.original_name}</div><div class="file-size">${fmtSize(f.size)}</div><a href="${f.url}" target="_blank" class="file-open">↗ Открыть</a><button class="file-del" onclick="deleteFile('${f.id}',this.closest('.file-row'))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>`;
       frag.appendChild(div);
     });
-    list.innerHTML = '';
-    list.appendChild(frag);
-  } catch (e) { list.innerHTML = `<div class="state-empty">Ошибка: ${e.message}</div>`; }
+    list.innerHTML='';list.appendChild(frag);
+  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
 }
 
-async function deleteFile(id, row) {
-  if (!confirm('Удалить файл?')) return;
-  try {
-    const r = await fetch(`${API}/api/files-db/${id}`, { method:'DELETE', headers: apiHeaders() });
-    const d = await r.json();
-    if (d.success) { row.remove(); toast('🗑 Файл удалён'); }
-    else toast('❌ ' + d.error);
-  } catch(e) { toast('❌ ' + e.message); }
+async function deleteFile(id,row){
+  if(!confirm('Удалить файл?'))return;
+  try{
+    const r=await fetch(`${API}/api/files-db/${id}`,{method:'DELETE',headers:apiH()});
+    const d=await r.json();
+    if(d.success){row.remove();toast('🗑 Файл удалён');}
+    else toast('❌ '+d.error);
+  }catch(e){toast('❌ '+e.message);}
 }
 
-async function deleteSection() {
-  if (!activeSection) return;
-  if (!confirm(`Удалить раздел «${activeSection.title}» и все его файлы?`)) return;
-  try {
-    const r = await fetch(`${API}/api/sections/${activeSection.id}`, { method:'DELETE', headers: apiHeaders() });
-    const d = await r.json();
-    if (d.success) { toast('🗑 Раздел удалён'); gotoSections(); }
-    else toast('❌ ' + d.error);
-  } catch(e) { toast('❌ ' + e.message); }
+async function deleteCurrentSection(){
+  if(!activeSection)return;
+  if(!confirm(`Удалить «${activeSection.title}» и все файлы?`))return;
+  try{
+    const r=await fetch(`${API}/api/sections/${activeSection.id}`,{method:'DELETE',headers:apiH()});
+    const d=await r.json();
+    if(d.success){toast('🗑 Удалено');goTo(navStack.length-2);}
+    else toast('❌ '+d.error);
+  }catch(e){toast('❌ '+e.message);}
 }
 
-// ══ NEW SECTION MODAL ══
-let selectedCat = null;
+// ══ ADD MODAL ══
+let selectedType='folder', selectedCatForAdd=null;
 
-function openNewSectionModal() {
-  selectedCat = activeCat || null;
-  document.getElementById('newSectionTitle').value = '';
-  document.getElementById('newSectionMsg').textContent = '';
-  // Рендерим выбор категории
-  const grid = document.getElementById('catSelectGrid');
-  grid.innerHTML = '';
-  Object.entries(CATEGORIES).forEach(([slug, meta]) => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-opt' + (slug === selectedCat ? ' active' : '');
-    btn.innerHTML = `<span>${meta.icon}</span>${meta.label}`;
-    btn.onclick = () => {
-      selectedCat = slug;
-      grid.querySelectorAll('.cat-opt').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    };
-    grid.appendChild(btn);
-  });
-  openModal('newSectionModal');
-}
+function openAddModal(){
+  const level=currentLevel();
+  selectedCatForAdd = level?.category||null;
+  // Если мы внутри папки/категории — тип можно выбирать
+  // Если мы на уровне категорий — показываем выбор категории
+  const onRoot = !level;
+  document.getElementById('typeSelectWrap').style.display = onRoot ? '' : '';
+  document.getElementById('catSelectWrap').style.display = onRoot ? '' : 'none';
+  document.getElementById('addTitle').value='';
+  document.getElementById('addMsg').textContent='';
+  selectType('folder');
 
-async function createSection() {
-  const title = document.getElementById('newSectionTitle').value.trim();
-  const msg   = document.getElementById('newSectionMsg');
-  if (!title) { msg.textContent = 'Введи название'; return; }
-  if (!selectedCat) { msg.textContent = 'Выбери категорию'; return; }
-  msg.style.color = 'var(--muted)'; msg.textContent = 'Создаём...';
-  try {
-    const r = await fetch(`${API}/api/sections`, {
-      method: 'POST', headers: apiHeaders(),
-      body: JSON.stringify({ category: selectedCat, title })
+  if(onRoot){
+    // Показываем выбор категории
+    document.getElementById('catSelectWrap').style.display='';
+    const grid=document.getElementById('catSelectGrid');
+    grid.innerHTML='';
+    Object.entries(CATS).forEach(([slug,meta])=>{
+      const btn=document.createElement('button');
+      btn.className='cat-opt'+(slug===selectedCatForAdd?' active':'');
+      btn.innerHTML=`<span>${meta.icon}</span>${meta.label}`;
+      btn.onclick=()=>{selectedCatForAdd=slug;grid.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};
+      grid.appendChild(btn);
     });
-    const d = await r.json();
-    if (d.success) {
-      closeModal('newSectionModal');
-      toast('✅ Раздел создан');
-      activeCat = selectedCat;
-      gotoSections();
-    } else { msg.style.color='var(--red)'; msg.textContent = d.error; }
-  } catch(e) { msg.style.color='var(--red)'; msg.textContent = e.message; }
+  } else {
+    document.getElementById('catSelectWrap').style.display='none';
+  }
+
+  document.getElementById('addModalTitle').textContent = level ? `Добавить в «${level.label}»` : 'Добавить';
+  openModal('addModal');
+}
+
+function selectType(t){
+  selectedType=t;
+  document.getElementById('typeFolder').classList.toggle('active',t==='folder');
+  document.getElementById('typeSection').classList.toggle('active',t==='section');
+}
+
+async function doAdd(){
+  const title=document.getElementById('addTitle').value.trim();
+  const msg=document.getElementById('addMsg');
+  if(!title){msg.textContent='Введи название';return;}
+  const level=currentLevel();
+  const category = level?.category || selectedCatForAdd;
+  if(!category){msg.textContent='Выбери категорию';return;}
+  const parentId = (level?.type==='folder'||level?.type==='cat'&&level.id) ? level.id : null;
+  const isFolder = selectedType==='folder';
+  msg.style.color='var(--muted)';msg.textContent='Создаём...';
+  try{
+    const body={category,title,is_folder:isFolder};
+    if(parentId) body.parent_id=parentId;
+    const r=await fetch(`${API}/api/sections`,{method:'POST',headers:apiH(),body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.success){
+      closeModal('addModal');toast('✅ Создано');
+      if(!level){enterCat(category,CATS[category].label);}
+      else{loadItems(category,parentId);}
+    } else {msg.style.color='var(--red)';msg.textContent=d.error;}
+  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
 }
 
 // ══ UPLOAD ══
-let uploadQueue = [];
+let uploadQueue=[];
 
-function openUploadModal() {
-  uploadQueue = [];
-  document.getElementById('uploadQueue').innerHTML = '';
-  document.getElementById('uploadMsg').textContent = '';
-  document.getElementById('uploadProgressWrap').style.display = 'none';
-  document.getElementById('uploadProgressFill').style.width = '0%';
+function openUploadModal(){
+  uploadQueue=[];
+  document.getElementById('uploadQueue').innerHTML='';
+  document.getElementById('uploadMsg').textContent='';
+  document.getElementById('progressBar').style.display='none';
+  document.getElementById('progressFill').style.width='0%';
   openModal('uploadModal');
 }
 
-function addFilesToQueue(files) {
-  for (const f of files) {
-    if (!uploadQueue.find(x => x.name === f.name && x.size === f.size)) {
-      uploadQueue.push(f);
-    }
-  }
+const uploadZone=document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag');addToQueue(e.dataTransfer.files);});
+
+function addToQueue(files){
+  for(const f of files) if(!uploadQueue.find(x=>x.name===f.name&&x.size===f.size)) uploadQueue.push(f);
   renderQueue();
 }
-
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('uploadZone').classList.remove('drag');
-  addFilesToQueue(e.dataTransfer.files);
-}
-
-const uploadZone = document.getElementById('uploadZone');
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag'));
-uploadZone.addEventListener('drop', handleDrop);
-
-function renderQueue() {
-  const qEl = document.getElementById('uploadQueue');
-  qEl.innerHTML = '';
-  uploadQueue.forEach((f, i) => {
-    const div = document.createElement('div');
-    div.className = 'queue-item';
-    const ext = f.name.split('.').pop();
-    div.innerHTML = `<span>${extIcon(ext)}</span><span class="queue-item-name">${f.name}</span><span class="queue-item-size">${fmtSize(f.size)}</span><button class="queue-item-remove" onclick="removeFromQueue(${i})">✕</button>`;
-    qEl.appendChild(div);
+function renderQueue(){
+  const q=document.getElementById('uploadQueue');q.innerHTML='';
+  uploadQueue.forEach((f,i)=>{
+    const ext=f.name.split('.').pop();
+    const div=document.createElement('div');div.className='queue-item';
+    div.innerHTML=`<span>${extIcon(ext)}</span><span class="queue-item-name">${f.name}</span><span class="queue-item-size">${fmtSize(f.size)}</span><button class="queue-remove" onclick="removeQ(${i})">✕</button>`;
+    q.appendChild(div);
   });
 }
+function removeQ(i){uploadQueue.splice(i,1);renderQueue();}
 
-function removeFromQueue(i) {
-  uploadQueue.splice(i, 1);
-  renderQueue();
-}
-
-async function uploadFiles() {
-  if (!uploadQueue.length) { document.getElementById('uploadMsg').textContent = 'Добавь файлы'; return; }
-  if (!activeSection) { document.getElementById('uploadMsg').textContent = 'Нет активного раздела'; return; }
-
-  const btn = document.getElementById('uploadSubmitBtn');
-  btn.disabled = true; btn.textContent = 'Загружаем...';
-  const progressWrap = document.getElementById('uploadProgressWrap');
-  const progressFill = document.getElementById('uploadProgressFill');
-  const msgEl = document.getElementById('uploadMsg');
-  progressWrap.style.display = 'block';
-
-  let done = 0;
-  for (const file of uploadQueue) {
-    msgEl.style.color = 'var(--muted)';
-    msgEl.textContent = `Загружаем ${file.name}...`;
-    try {
-      const data = await readFileAsBase64(file);
-      const ext  = file.name.split('.').pop().toLowerCase();
-      const r = await fetch(`${API}/api/files-db`, {
-        method: 'POST', headers: apiHeaders(),
-        body: JSON.stringify({
-          section_id: activeSection.id,
-          original_name: file.name,
-          size: file.size, ext, data
-        })
-      });
-      const d = await r.json();
-      if (!d.success) throw new Error(d.error);
-      done++;
-      progressFill.style.width = Math.round((done / uploadQueue.length) * 100) + '%';
-    } catch(e) {
-      msgEl.style.color = 'var(--red)';
-      msgEl.textContent = `Ошибка: ${e.message}`;
-      btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Загрузить';
-      return;
+async function doUpload(){
+  if(!uploadQueue.length){document.getElementById('uploadMsg').textContent='Добавь файлы';return;}
+  if(!activeSection){document.getElementById('uploadMsg').textContent='Нет активного раздела';return;}
+  const btn=document.getElementById('uploadBtn');
+  btn.disabled=true;btn.textContent='Загружаем...';
+  const bar=document.getElementById('progressBar');const fill=document.getElementById('progressFill');
+  const msg=document.getElementById('uploadMsg');
+  bar.style.display='block';
+  let done=0;
+  for(const file of uploadQueue){
+    msg.style.color='var(--muted)';msg.textContent=`Загружаем ${file.name}...`;
+    try{
+      const data=await toBase64(file);
+      const ext=file.name.split('.').pop().toLowerCase();
+      const r=await fetch(`${API}/api/files-db`,{method:'POST',headers:apiH(),body:JSON.stringify({section_id:activeSection.id,original_name:file.name,size:file.size,ext,data})});
+      const d=await r.json();
+      if(!d.success)throw new Error(d.error);
+      done++;fill.style.width=Math.round(done/uploadQueue.length*100)+'%';
+    }catch(e){
+      msg.style.color='var(--red)';msg.textContent=`Ошибка: ${e.message}`;
+      btn.disabled=false;btn.textContent='Загрузить';return;
     }
   }
-
-  closeModal('uploadModal');
-  toast(`✅ Загружено ${done} файл${done===1?'':'ов'}`);
+  closeModal('uploadModal');toast(`✅ Загружено ${done} файл${done===1?'':'ов'}`);
   loadSectionFiles(activeSection.id);
-  btn.disabled = false;
-  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Загрузить';
+  btn.disabled=false;btn.textContent='Загрузить';
 }
 
-function readFileAsBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = () => rej(new Error('Ошибка чтения файла'));
-    r.readAsDataURL(file);
-  });
-}
+const toBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Ошибка чтения'));r.readAsDataURL(file);});
 
 // ══ USERS ══
-let editingUser = null, selectedRole = 'user';
+let editingUser=null,selectedRole='user';
 
-async function loadUsers() {
-  const q = document.getElementById('usersSearch')?.value?.trim() || '';
-  const list = document.getElementById('usersList');
-  list.innerHTML = '<div class="state-load"><div class="spinner"></div> Загрузка...</div>';
-  try {
-    const url = `${API}/api/admin/users${q ? '?q='+encodeURIComponent(q) : ''}`;
-    const r = await fetch(url, { headers: apiHeaders() });
-    const d = await r.json();
-    const users = d.users || [];
-    if (!users.length) {
-      list.innerHTML = '<div class="state-empty"><span class="state-empty-icon">👤</span>Пользователей не найдено</div>';
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    users.forEach(u => {
-      const div = document.createElement('div');
-      div.className = 'user-row';
-      div.innerHTML = `
-        <div class="user-av">${(u.username||'?')[0].toUpperCase()}</div>
-        <div class="user-info">
-          <div class="user-nick">${u.username}</div>
-          <div class="user-date">С ${fmtDate(u.created_at)}</div>
-        </div>
-        <span class="role-badge role-${u.role}">${u.role==='admin'?'👑 Администратор':'👤 Пользователь'}</span>
-        <button class="edit-btn" onclick="openEditUser(${JSON.stringify(u).replace(/"/g,'&quot;')})" title="Редактировать">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>`;
+async function loadUsers(){
+  const q=document.getElementById('usersSearch')?.value?.trim()||'';
+  const list=document.getElementById('usersList');
+  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
+  try{
+    const r=await fetch(`${API}/api/admin/users${q?'?q='+encodeURIComponent(q):''}`,{headers:apiH()});
+    const d=await r.json();
+    const users=d.users||[];
+    if(!users.length){list.innerHTML='<div class="state-empty"><span class="state-empty-icon">👤</span>Пользователей не найдено</div>';return;}
+    const frag=document.createDocumentFragment();
+    users.forEach(u=>{
+      const div=document.createElement('div');div.className='user-row';
+      div.innerHTML=`<div class="user-av">${(u.username||'?')[0].toUpperCase()}</div><div class="user-info"><div class="user-nick">${u.username}</div><div class="user-date">С ${fmtDate(u.created_at)}</div></div><span class="role-badge role-${u.role}">${u.role==='admin'?'👑 Администратор':'👤 Пользователь'}</span><button class="edit-btn" onclick='openEditUser(${JSON.stringify(u).replace(/'/g,"&#39;")})' title="Редактировать"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>`;
       frag.appendChild(div);
     });
-    list.innerHTML = '';
-    list.appendChild(frag);
-  } catch(e) { list.innerHTML = `<div class="state-empty">Ошибка: ${e.message}</div>`; }
+    list.innerHTML='';list.appendChild(frag);
+  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
 }
 
-function openEditUser(u) {
-  editingUser = u;
-  selectedRole = u.role || 'user';
-  document.getElementById('editUsername').value = u.username;
-  document.getElementById('editPassword').value = '';
-  document.getElementById('editPassword').placeholder = 'Установлен (оставь пустым чтобы не менять)';
-  document.getElementById('editUserMsg').textContent = '';
-  updateRoleButtons();
+function openEditUser(u){
+  editingUser=u;selectedRole=u.role||'user';
+  document.getElementById('editUsername').value=u.username;
+  document.getElementById('editPassword').value='';
+  document.getElementById('editUserMsg').textContent='';
+  updateRoleBtns();
   openModal('editUserModal');
 }
-
-function selectRole(role) {
-  selectedRole = role;
-  updateRoleButtons();
+function selectRole(r){selectedRole=r;updateRoleBtns();}
+function updateRoleBtns(){
+  document.getElementById('roleOptUser').classList.toggle('active',selectedRole==='user');
+  document.getElementById('roleOptAdmin').classList.toggle('active',selectedRole==='admin');
+}
+async function saveUser(){
+  if(!editingUser)return;
+  const username=document.getElementById('editUsername').value.trim();
+  const password=document.getElementById('editPassword').value;
+  const msg=document.getElementById('editUserMsg');
+  if(!username){msg.textContent='Введи никнейм';return;}
+  msg.style.color='var(--muted)';msg.textContent='Сохраняем...';
+  const body={username,role:selectedRole};
+  if(password)body.password=password;
+  try{
+    const r=await fetch(`${API}/api/admin/users/${editingUser.id}`,{method:'PATCH',headers:apiH(),body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.success){closeModal('editUserModal');toast('✅ Сохранено');loadUsers();}
+    else{msg.style.color='var(--red)';msg.textContent=d.error;}
+  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
 }
 
-function updateRoleButtons() {
-  document.getElementById('roleOptUser').classList.toggle('active', selectedRole === 'user');
-  document.getElementById('roleOptAdmin').classList.toggle('active', selectedRole === 'admin');
-}
-
-async function saveUser() {
-  if (!editingUser) return;
-  const username = document.getElementById('editUsername').value.trim();
-  const password = document.getElementById('editPassword').value;
-  const msg = document.getElementById('editUserMsg');
-  if (!username) { msg.textContent = 'Введи никнейм'; return; }
-  msg.style.color = 'var(--muted)'; msg.textContent = 'Сохраняем...';
-  const body = { username, role: selectedRole };
-  if (password) body.password = password;
-  try {
-    const r = await fetch(`${API}/api/admin/users/${editingUser.id}`, {
-      method: 'PATCH', headers: apiHeaders(), body: JSON.stringify(body)
-    });
-    const d = await r.json();
-    if (d.success) {
-      closeModal('editUserModal');
-      toast('✅ Пользователь обновлён');
-      loadUsers();
-    } else { msg.style.color='var(--red)'; msg.textContent = d.error; }
-  } catch(e) { msg.style.color='var(--red)'; msg.textContent = e.message; }
-}
-
-// ══ MODAL HELPERS ══
-function openModal(id)  { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
-});
+// ══ MODAL ══
+function openModal(id){document.getElementById(id).classList.add('show');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
 
 // ══ TOAST ══
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2800);
-}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
 </body>
 </html>
