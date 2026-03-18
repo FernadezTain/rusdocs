@@ -291,60 +291,74 @@ app.delete("/api/files-db/:id", requireAdmin, async (req, res) => {
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
 
-// ════ PUBLIC FILES (старый json-индекс, для совместимости) ════
-const CATEGORY_META = {
-  russian:     { label: "Русский язык",        icon: "Я", color: "#e8c96a" },
-  literature:  { label: "Литература",           icon: "📖", color: "#ff9ed2" },
-  folklore:    { label: "Фольклор",             icon: "🎭", color: "#b48dff" },
-  classical:   { label: "Классика XIX века",    icon: "🪶", color: "#7eb8ff" },
-  modern:      { label: "Литература XX–XXI в.", icon: "✍️", color: "#4ecdc4" },
-  foreign:     { label: "Зарубежная лит-ра",   icon: "🌍", color: "#7de8a0" },
-  theory:      { label: "Теория литературы",    icon: "📐", color: "#ffb87a" },
-  essays:      { label: "Сочинения и эссе",     icon: "📝", color: "#ff9ed2" },
-};
+// ════ PUBLIC FILES ════
 
 app.get("/api/files", async (_req, res) => {
-  // Отдаём файлы из БД
   try {
-    const sections = await sb("sections?select=id,category,title");
-    const files    = await sb("files?select=*");
+    // Загружаем категории из БД — чтобы custom-категории тоже отображались с правильным именем
+    const [cats, sections, files] = await Promise.all([
+      sb("categories?select=slug,label,icon,color"),
+      sb("sections?select=id,category,title,is_folder"),
+      sb("files?select=*&order=created_at.desc"),
+    ]);
+
+    // Строим map: slug -> meta
+    const catMap = {};
+    (cats || []).forEach(c => { catMap[c.slug] = c; });
+
+    // Строим map: section id -> section
+    const secMap = {};
+    (sections || []).forEach(s => { secMap[s.id] = s; });
+
     const result = (files || []).map(f => {
-      const sec = (sections || []).find(s => s.id === f.section_id);
-      const cat = sec?.category || "other";
-      const meta = CATEGORY_META[cat] || { label: cat, icon: "📁", color: "#888" };
+      const sec  = secMap[f.section_id];
+      const cat  = sec?.category || "other";
+      const meta = catMap[cat] || { label: cat, icon: "📁", color: "#888" };
+
+      // Вытаскиваем ext из original_name если в БД не сохранился
+      const rawExt = f.ext || (f.original_name || "").split(".").pop().toLowerCase() || "";
+      // Убираем лишнее — только буквы/цифры, макс 5 символов
+      const ext = /^[a-z0-9]{1,5}$/.test(rawExt) ? rawExt : "";
+
       return {
-        id: f.id, name: f.original_name,
-        category: cat, categoryLabel: meta.label, categoryColor: meta.color, categoryIcon: meta.icon,
-        section: sec?.title || "",
-        ext: f.ext, size: f.size,
-        modified: f.created_at,
-        url: f.url
+        id:            f.id,
+        name:          f.original_name || f.name || "Файл",
+        category:      cat,
+        categoryLabel: meta.label,
+        categoryColor: meta.color,
+        categoryIcon:  meta.icon,
+        section:       sec?.title || "",
+        ext,
+        size:          f.size,
+        modified:      f.created_at,
+        url:           f.url,
       };
     });
+
     res.json({ success: true, files: result });
   } catch (e) {
-    // Fallback на json-индекс
-    const p = path.join(__dirname, "public", "files-index.json");
-    if (fs.existsSync(p)) {
-      try { return res.json({ success: true, files: JSON.parse(fs.readFileSync(p, "utf8")) }); } catch {}
-    }
+    console.error("/api/files error:", e.message);
     res.json({ success: true, files: [] });
   }
 });
 
 app.get("/api/categories", async (_req, res) => {
   try {
-    // Берём все категории из БД
-    const cats = await sb("categories?order=is_default.desc,created_at.asc&select=*");
-    const sections = await sb("sections?select=category");
+    const [cats, sections] = await Promise.all([
+      sb("categories?order=is_default.desc,created_at.asc&select=*"),
+      sb("sections?select=category"),
+    ]);
     const countMap = {};
     (sections || []).forEach(s => { countMap[s.category] = (countMap[s.category] || 0) + 1; });
     const result = (cats || []).map(c => ({
       slug: c.slug, label: c.label, icon: c.icon, color: c.color,
-      is_default: c.is_default, count: countMap[c.slug] || 0
+      is_default: c.is_default, count: countMap[c.slug] || 0,
     }));
     res.json({ success: true, categories: result });
-  } catch (e) { res.json({ success: true, categories: [] }); }
+  } catch (e) {
+    console.error("/api/categories error:", e.message);
+    res.json({ success: true, categories: [] });
+  }
 });
 
 app.get("/api/health", (_req, res) => {
