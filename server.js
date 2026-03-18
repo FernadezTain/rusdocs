@@ -163,7 +163,7 @@ app.post("/api/files-db", requireAdmin, async (req, res) => {
 
     // Storage требует service_role key (не anon)
     const upRes = await fetch(
-      `${SB_URL}/storage/v1/object/files/${storageKey}`,
+      `${SB_URL}/storage/v1/object/RusDocs/${storageKey}`,
       {
         method: "POST",
         headers: {
@@ -178,7 +178,7 @@ app.post("/api/files-db", requireAdmin, async (req, res) => {
 
     let url;
     if (upRes.ok) {
-      url = `${SB_URL}/storage/v1/object/public/files/${storageKey}`;
+      url = `${SB_URL}/storage/v1/object/public/RusDocs/${storageKey}`;
     } else {
       const errText = await upRes.text();
       console.error("Storage upload failed:", upRes.status, errText.slice(0, 200));
