@@ -93,6 +93,14 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 .item-name{flex:1;font-weight:600;font-size:.88rem;}
 .item-meta{font-size:.68rem;color:var(--muted);white-space:nowrap;}
 .item-arrow{color:var(--muted2);flex-shrink:0;}
+.item-del-btn{
+  background:none;border:none;cursor:pointer;
+  color:var(--muted2);padding:6px 8px;border-radius:8px;
+  display:flex;align-items:center;flex-shrink:0;
+  transition:all .18s;opacity:0;
+}
+.item-row:hover .item-del-btn{opacity:1;}
+.item-del-btn:hover{color:var(--red);background:rgba(255,107,107,0.12);}
 
 /* EDITOR BAR */
 .editor-bar{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding:1rem 1.25rem;border-radius:var(--r);background:rgba(232,201,106,0.06);border:1px solid rgba(232,201,106,0.18);flex-wrap:wrap;}
@@ -178,6 +186,31 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 .type-opt .type-ico{font-size:1.3rem;}
 .type-opt.active{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
 
+/* Cat delete btn */
+.cat-card{position:relative;}
+.cat-delete-btn{
+  position:absolute;top:10px;right:10px;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(255,107,107,0.0);border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;z-index:10;
+  opacity:0;
+}
+.cat-card:hover .cat-delete-btn{opacity:1;}
+.cat-delete-btn:hover{background:rgba(255,107,107,0.25);border-color:rgba(255,107,107,0.5);color:var(--red);}
+
+/* Add category card */
+.cat-add-card{
+  border-style:dashed !important;
+  border-color:rgba(255,255,255,0.12) !important;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:120px;
+}
+.cat-add-card:hover{border-color:rgba(232,201,106,0.4) !important;background:rgba(232,201,106,0.04) !important;}
+.cat-add-card:hover .cat-icon{opacity:.7 !important;}
+.cat-add-card:hover .cat-name{opacity:.8 !important;color:var(--gold) !important;}
+
 /* States */
 .spinner{width:26px;height:26px;border-radius:50%;border:2px solid rgba(232,201,106,.15);border-top-color:var(--gold);animation:spin .85s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -230,9 +263,13 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
   <div class="tab-panel active" id="tab-files">
     <div class="panel-header">
       <div class="panel-title" id="filesTitle">Управление файлами</div>
-      <button class="btn btn-gold" id="addBtn" onclick="openAddModal()">
+        <button class="btn btn-gold" id="addBtn" onclick="openAddModal()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span id="addBtnLabel">Добавить</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" id="newCatBtn" onclick="openNewCatModal()" style="display:none" title="Новая категория">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Новая категория
       </button>
     </div>
 
@@ -285,6 +322,70 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
     </div>
     <div class="users-list" id="usersList">
       <div class="state-load"><div class="spinner"></div>Загрузка...</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE ITEM (папка или раздел) -->
+<div class="overlay" id="deleteItemModal">
+  <div class="modal" style="max-width:380px">
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:2.5rem;margin-bottom:.75rem" id="deleteItemEmoji">📁</div>
+      <div class="modal-title" style="margin-bottom:.4rem" id="deleteItemTitle">Удалить папку?</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.6">
+        «<strong id="deleteItemName" style="color:var(--text)"></strong>»
+        <span id="deleteItemDesc"> и всё её содержимое будет удалено.</span>
+      </div>
+    </div>
+    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:.85rem 1rem;font-size:.8rem;color:var(--red);margin-bottom:1.25rem;text-align:center;">
+      ⚠️ Это действие необратимо
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('deleteItemModal')">Нет, отмена</button>
+      <button class="btn btn-red" id="deleteItemConfirmBtn" onclick="confirmDeleteItem()">Да, удалить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NEW CATEGORY -->
+<div class="overlay" id="newCatModal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="closeModal('newCatModal')">✕</button>
+    <div class="modal-title">✨ Создание категории</div>
+    <div class="field-group">
+      <div class="field-label">Смайлик <span style="color:var(--muted2);font-weight:400;letter-spacing:0">(необязательно)</span></div>
+      <input class="field-input" id="newCatIcon" placeholder="📚 или любой символ" maxlength="4" style="font-size:1.4rem;text-align:center;letter-spacing:4px">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Название <span style="color:var(--red)">*</span></div>
+      <input class="field-input" id="newCatLabel" placeholder="Название категории...">
+    </div>
+    <div class="field-group">
+      <div class="field-label">Цвет акцента</div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="colorPicker"></div>
+    </div>
+    <div class="modal-msg" id="newCatMsg" style="color:var(--red)"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('newCatModal')">Отмена</button>
+      <button class="btn btn-gold" onclick="createCategory()">Создать →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE CATEGORY -->
+<div class="overlay" id="deleteCatModal">
+  <div class="modal" style="max-width:380px">
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:2.5rem;margin-bottom:.75rem">🗑️</div>
+      <div class="modal-title" style="margin-bottom:.4rem">Удалить категорию?</div>
+      <div style="font-size:.85rem;color:var(--muted);line-height:1.6">Категория <strong id="deleteCatName" style="color:var(--text)"></strong> и все её разделы и файлы будут удалены навсегда.</div>
+    </div>
+    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:.85rem 1rem;font-size:.8rem;color:var(--red);margin-bottom:1.25rem;text-align:center;">
+      ⚠️ Это действие необратимо
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeModal('deleteCatModal')">Нет, отмена</button>
+      <button class="btn btn-red" id="deleteCatConfirmBtn" onclick="confirmDeleteCat()">Да, удалить</button>
     </div>
   </div>
 </div>
@@ -383,16 +484,27 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 <script>
 const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? `http://${location.hostname}:3000` : '';
 
-const CATS = {
-  russian:    {label:'Русский язык',       icon:'Я',   color:'#e8c96a'},
-  literature: {label:'Литература',          icon:'📖',  color:'#ff9ed2'},
-  folklore:   {label:'Фольклор',            icon:'🎭',  color:'#b48dff'},
-  classical:  {label:'Классика XIX века',   icon:'🪶',  color:'#7eb8ff'},
-  modern:     {label:'Литература XX–XXI в.',icon:'✍️',  color:'#4ecdc4'},
-  foreign:    {label:'Зарубежная лит-ра',   icon:'🌍',  color:'#7de8a0'},
-  theory:     {label:'Теория литературы',   icon:'📐',  color:'#ffb87a'},
-  essays:     {label:'Сочинения и эссе',    icon:'📝',  color:'#ff9ed2'},
-};
+// Категории загружаются из БД
+let CATS = {}; // slug -> {label,icon,color,is_default,id}
+let catsArray = []; // для рендера в правильном порядке
+
+async function loadCatsFromDB() {
+  try {
+    const r = await fetch(`${API}/api/categories-list`, { headers: apiH() });
+    const d = await r.json();
+    CATS = {};
+    catsArray = d.categories || [];
+    catsArray.forEach(c => { CATS[c.slug] = c; });
+  } catch(e) {
+    console.warn('loadCatsFromDB error:', e);
+    // fallback
+    catsArray = [
+      {slug:'russian',   label:'Русский язык', icon:'Я',  color:'#e8c96a', is_default:true},
+      {slug:'literature',label:'Литература',    icon:'📖', color:'#ff9ed2', is_default:true},
+    ];
+    catsArray.forEach(c => CATS[c.slug] = c);
+  }
+}
 
 const EXT_ICONS={pdf:'📄',doc:'📝',docx:'📝',ppt:'📊',pptx:'📊',xls:'📈',xlsx:'📈',txt:'📃',zip:'🗜️',rar:'🗜️',jpg:'🖼️',png:'🖼️',mp4:'🎬',mp3:'🎵'};
 const extIcon = e => EXT_ICONS[e?.toLowerCase()]||'📁';
@@ -401,13 +513,14 @@ const fmtDate = iso => new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',m
 
 // ══ AUTH ══
 let currentUser = null;
-(function init(){
+(async function init(){
   try { currentUser = JSON.parse(localStorage.getItem('methbook_user')); } catch{}
   if(!currentUser||currentUser.role!=='admin'){
     document.getElementById('accessDenied').style.display='flex';
     return;
   }
   document.getElementById('app').style.display='block';
+  await loadCatsFromDB();
   renderCats();
   loadUsers();
 })();
@@ -440,7 +553,13 @@ function renderBreadcrumb(){
 }
 
 function goTo(idx){
-  if(idx===-1){ navStack=[]; activeSection=null; showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn(); return; }
+  if(idx===-1){
+    navStack=[]; activeSection=null;
+    showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn();
+    document.getElementById('newCatBtn').style.display='flex';
+    document.getElementById('addBtn').style.display='none';
+    return;
+  }
   navStack = navStack.slice(0,idx+1);
   activeSection = null;
   const level = navStack[idx];
@@ -466,27 +585,42 @@ function updateAddBtn(){
 // ══ CATEGORIES ══
 async function renderCats(){
   showView('cats');
+  document.getElementById('newCatBtn').style.display='flex';
+  document.getElementById('addBtn').style.display='none';
   const grid=document.getElementById('catGrid');
   grid.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
-  // Считаем разделы на верхнем уровне для каждой категории
+  await loadCatsFromDB();
   const counts={};
-  await Promise.all(Object.keys(CATS).map(async slug=>{
+  await Promise.all(catsArray.map(async c=>{
     try{
-      const r=await fetch(`${API}/api/sections?category=${slug}&parent_id=null`);
+      const r=await fetch(`${API}/api/sections?category=${c.slug}&parent_id=null`);
       const d=await r.json();
-      counts[slug]=(d.sections||[]).length;
-    }catch{counts[slug]=0;}
+      counts[c.slug]=(d.sections||[]).length;
+    }catch{counts[c.slug]=0;}
   }));
   grid.innerHTML='';
   const frag=document.createDocumentFragment();
-  Object.entries(CATS).forEach(([slug,meta])=>{
+  catsArray.forEach(cat=>{
     const div=document.createElement('div');
     div.className='cat-card';
-    div.style.setProperty('--cc',meta.color);
-    div.innerHTML=`<span class="cat-icon">${meta.icon}</span><div class="cat-name">${meta.label}</div><div class="cat-count">${counts[slug]||0} элементов</div>`;
-    div.onclick=()=>enterCat(slug,meta.label);
+    div.style.setProperty('--cc',cat.color);
+    const isDefault=cat.is_default;
+    div.innerHTML=`
+      ${!isDefault?`<button class="cat-delete-btn" onclick="askDeleteCat(event,'${cat.id}','${cat.label.replace(/'/g,"\'")}','${cat.slug}')" title="Удалить категорию">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`:''}
+      <span class="cat-icon">${cat.icon}</span>
+      <div class="cat-name">${cat.label}</div>
+      <div class="cat-count">${counts[cat.slug]||0} элементов</div>`;
+    div.onclick=()=>enterCat(cat.slug,cat.label);
     frag.appendChild(div);
   });
+  // Кнопка "Добавить категорию"
+  const addDiv=document.createElement('div');
+  addDiv.className='cat-card cat-add-card';
+  addDiv.innerHTML=`<span class="cat-icon" style="opacity:.4">＋</span><div class="cat-name" style="opacity:.55">Новая категория</div>`;
+  addDiv.onclick=openNewCatModal;
+  frag.appendChild(addDiv);
   grid.appendChild(frag);
 }
 
@@ -498,6 +632,8 @@ function enterCat(slug,label){
   renderBreadcrumb();
   updateAddBtn();
   document.getElementById('filesTitle').textContent=label;
+  document.getElementById('newCatBtn').style.display='none';
+  document.getElementById('addBtn').style.display='flex';
 }
 
 // ══ ITEMS LIST (папки + разделы) ══
@@ -520,10 +656,15 @@ async function loadItems(category, parentId){
       const div=document.createElement('div');
       const isFolder = item.is_folder || false;
       div.className='item-row'+(isFolder?' is-folder':'');
+      const itemId = item.id;
+      const itemTitle = item.title.replace(/'/g,"\\'");
       div.innerHTML=`
         <div class="item-icon ${isFolder?'folder':'section'}">${isFolder?'📁':'📄'}</div>
         <div class="item-name">${item.title}</div>
         <div class="item-meta">${fmtDate(item.created_at)}</div>
+        <button class="item-del-btn" title="Удалить" onclick="askDeleteItem(event,'${itemId}','${itemTitle}',${isFolder})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </button>
         <svg class="item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
       div.onclick=()=>enterItem(item, isFolder, category);
       frag.appendChild(div);
@@ -608,15 +749,14 @@ function openAddModal(){
   selectType('folder');
 
   if(onRoot){
-    // Показываем выбор категории
     document.getElementById('catSelectWrap').style.display='';
     const grid=document.getElementById('catSelectGrid');
     grid.innerHTML='';
-    Object.entries(CATS).forEach(([slug,meta])=>{
+    catsArray.forEach(cat=>{
       const btn=document.createElement('button');
-      btn.className='cat-opt'+(slug===selectedCatForAdd?' active':'');
-      btn.innerHTML=`<span>${meta.icon}</span>${meta.label}`;
-      btn.onclick=()=>{selectedCatForAdd=slug;grid.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};
+      btn.className='cat-opt'+(cat.slug===selectedCatForAdd?' active':'');
+      btn.innerHTML=`<span>${cat.icon}</span>${cat.label}`;
+      btn.onclick=()=>{selectedCatForAdd=cat.slug;grid.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};
       grid.appendChild(btn);
     });
   } else {
@@ -717,6 +857,100 @@ async function doUpload(){
 }
 
 const toBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Ошибка чтения'));r.readAsDataURL(file);});
+
+// ══ DELETE ITEM (папка / раздел) ══
+let deletingItemId = null, deletingItemIsFolder = false;
+
+function askDeleteItem(e, id, title, isFolder){
+  e.stopPropagation();
+  deletingItemId = id;
+  deletingItemIsFolder = isFolder;
+  document.getElementById('deleteItemEmoji').textContent = isFolder ? '📁' : '📄';
+  document.getElementById('deleteItemTitle').textContent = isFolder ? 'Удалить папку?' : 'Удалить раздел?';
+  document.getElementById('deleteItemName').textContent = title;
+  document.getElementById('deleteItemDesc').textContent = isFolder
+    ? ' и все вложенные папки, разделы и файлы будут удалены.'
+    : ' и все файлы внутри будут удалены.';
+  openModal('deleteItemModal');
+}
+
+async function confirmDeleteItem(){
+  if(!deletingItemId) return;
+  const btn = document.getElementById('deleteItemConfirmBtn');
+  btn.disabled = true; btn.textContent = 'Удаляем...';
+  try {
+    const r = await fetch(`${API}/api/sections/${deletingItemId}`, { method:'DELETE', headers:apiH() });
+    const d = await r.json();
+    if(d.success){
+      closeModal('deleteItemModal');
+      toast(`🗑 ${deletingItemIsFolder ? 'Папка' : 'Раздел'} удалён`);
+      // Перезагружаем текущий список
+      const level = currentLevel();
+      if(level) loadItems(level.category, level.type==='folder' ? level.id : null);
+      else renderCats();
+    } else {
+      toast('❌ ' + d.error);
+    }
+  } catch(e){ toast('❌ ' + e.message); }
+  btn.disabled = false; btn.textContent = 'Да, удалить';
+  deletingItemId = null;
+}
+
+// ══ NEW CATEGORY ══
+const ACCENT_COLORS = ['#e8c96a','#ff9ed2','#b48dff','#7eb8ff','#4ecdc4','#7de8a0','#ffb87a','#ff6b6b','#a0c4ff','#c9f0a0'];
+let selectedAccentColor = '#7eb8ff';
+let deletingCatId = null, deletingCatSlug = null;
+
+function openNewCatModal(){
+  document.getElementById('newCatIcon').value='';
+  document.getElementById('newCatLabel').value='';
+  document.getElementById('newCatMsg').textContent='';
+  selectedAccentColor='#7eb8ff';
+  // Render color picker
+  const cp=document.getElementById('colorPicker');
+  cp.innerHTML='';
+  ACCENT_COLORS.forEach(c=>{
+    const btn=document.createElement('button');
+    btn.style.cssText=`width:28px;height:28px;border-radius:50%;background:${c};border:3px solid ${c===selectedAccentColor?'#fff':'transparent'};cursor:pointer;transition:all .18s;`;
+    btn.onclick=(e)=>{e.preventDefault();selectedAccentColor=c;cp.querySelectorAll('button').forEach(b=>b.style.borderColor='transparent');btn.style.borderColor='#fff';};
+    cp.appendChild(btn);
+  });
+  openModal('newCatModal');
+}
+
+async function createCategory(){
+  const label=document.getElementById('newCatLabel').value.trim();
+  const icon=document.getElementById('newCatIcon').value.trim()||'📁';
+  const msg=document.getElementById('newCatMsg');
+  if(!label){msg.textContent='Введи название';return;}
+  msg.style.color='var(--muted)';msg.textContent='Создаём...';
+  try{
+    const r=await fetch(`${API}/api/categories-list`,{method:'POST',headers:apiH(),body:JSON.stringify({label,icon,color:selectedAccentColor})});
+    const d=await r.json();
+    if(d.success){closeModal('newCatModal');toast('✅ Категория создана');renderCats();}
+    else{msg.style.color='var(--red)';msg.textContent=d.error;}
+  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
+}
+
+function askDeleteCat(e, id, label, slug){
+  e.stopPropagation();
+  deletingCatId=id; deletingCatSlug=slug;
+  document.getElementById('deleteCatName').textContent=label;
+  openModal('deleteCatModal');
+}
+
+async function confirmDeleteCat(){
+  if(!deletingCatId)return;
+  const btn=document.getElementById('deleteCatConfirmBtn');
+  btn.disabled=true;btn.textContent='Удаляем...';
+  try{
+    const r=await fetch(`${API}/api/categories-list/${deletingCatId}`,{method:'DELETE',headers:apiH()});
+    const d=await r.json();
+    if(d.success){closeModal('deleteCatModal');toast('🗑 Категория удалена');renderCats();}
+    else toast('❌ '+d.error);
+  }catch(e){toast('❌ '+e.message);}
+  btn.disabled=false;btn.textContent='Да, удалить';
+}
 
 // ══ USERS ══
 let editingUser=null,selectedRole='user';
