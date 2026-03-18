@@ -42,6 +42,9 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  /* Плавный скролл на мобилке */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
 /* ══════════════════════════════════════
@@ -53,6 +56,7 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
   pointer-events: none; z-index: 0; opacity: 0.6;
 }
+@media (max-width: 768px) { body::before { display: none; } }
 
 /* ══════════════════════════════════════
    BG ORBS
@@ -62,6 +66,7 @@ body::before {
   position: absolute; border-radius: 50%;
   filter: blur(120px); opacity: 0.08;
   animation: drift 25s ease-in-out infinite alternate;
+  will-change: transform;
 }
 .orb1 { width: 600px; height: 600px; background: var(--gold); top: -200px; left: -150px; animation-delay: 0s; }
 .orb2 { width: 500px; height: 500px; background: var(--blue); top: 30%; right: -180px; animation-delay: -10s; }
@@ -70,6 +75,11 @@ body::before {
   0%   { transform: translate(0, 0) scale(1); }
   50%  { transform: translate(30px, -40px) scale(1.05); }
   100% { transform: translate(-20px, 25px) scale(0.97); }
+}
+/* На мобилке отключаем тяжёлые эффекты */
+@media (max-width: 768px) {
+  .orb { animation: none !important; filter: blur(80px); opacity: 0.05; }
+  .bg-orbs { display: none; }
 }
 
 /* ══════════════════════════════════════
@@ -80,7 +90,7 @@ header {
   height: 64px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 2rem;
-  background: rgba(6,8,15,0.85);
+  background: rgba(6,8,15,0.95);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
@@ -256,7 +266,7 @@ header {
   background: rgba(11,14,26,0.95);
   border: 1px solid var(--border-bright);
   border-radius: var(--r-lg); padding: 1.25rem;
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 24px 64px rgba(0,0,0,0.5);
   display: none;
   animation: panelIn .2s ease both;
@@ -347,6 +357,7 @@ header {
   position: relative; overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   animation: cardIn .4s ease both;
+  contain: layout style;
 }
 .file-card::before {
   content: ''; position: absolute; inset: 0;
@@ -568,17 +579,23 @@ header {
    RESPONSIVE
 ══════════════════════════════════════ */
 @media (max-width: 640px) {
-  header { padding: 0 1rem; }
+  header { padding: 0 1rem; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(6,8,15,0.98); }
   .hero { padding: 3rem 1rem 2.5rem; }
   .hero h1 { letter-spacing: -.5px; }
   .search-wrap { padding: 0 1rem; }
-  #filterPanel { margin: 10px 1rem 0; }
+  #filterPanel { margin: 10px 1rem 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(11,14,26,0.99); }
   .stats-bar { padding: 0 1rem; }
   #filesGrid { padding: 0 1rem; grid-template-columns: 1fr; }
   .logo-text { display: none; }
   .search-wrap { flex-direction: column; }
   #filterBtn { width: 100%; justify-content: center; border-radius: 100px; }
   .stats-sort { display: none; }
+  /* Отключаем тяжёлые анимации */
+  .file-card { animation: none !important; transform: none !important; }
+  .file-card:hover { transform: none !important; }
+  .hero-eyebrow, .hero h1, .hero p, .search-wrap { animation: none !important; }
+  /* Отключаем hover-эффекты на тач-устройствах */
+  .file-card:active { background: rgba(255,255,255,0.06); }
 }
 </style>
 </head>
@@ -872,54 +889,62 @@ function getFiltered() {
   return files;
 }
 
+function makeCard(f, i) {
+  const a = document.createElement('a');
+  a.className = 'file-card';
+  a.href = f.url;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  // На мобилке не используем animation-delay
+  const isMobile = window.innerWidth <= 640;
+  a.style.cssText = `--card-accent:${f.categoryColor};${isMobile ? '' : `animation-delay:${Math.min(i * 0.04, 0.4)}s`}`;
+  a.innerHTML = `
+    <div class="card-top">
+      <div class="file-type-badge">${extIcon(f.ext)}</div>
+      <span class="cat-badge"
+        style="background:${f.categoryColor}18;border:1px solid ${f.categoryColor}38;color:${f.categoryColor}">
+        ${f.categoryIcon} ${f.categoryLabel}
+      </span>
+    </div>
+    <div class="file-name">${nameWithoutExt(f.name)}</div>
+    <div class="card-meta">
+      <span>${f.ext?.toUpperCase() || 'FILE'}</span>
+      <div class="meta-dot"></div>
+      <span>${fmtSize(f.size)}</span>
+      <div class="meta-dot"></div>
+      <span>${fmtDate(f.modified)}</span>
+    </div>
+    <div class="card-dl">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Скачать файл
+    </div>`;
+  return a;
+}
+
+let _renderTimer = null;
 function renderGrid() {
-  const grid = document.getElementById('filesGrid');
-  const files = getFiltered();
-  const total = allFiles.length;
-  document.getElementById('statsCount').innerHTML =
-    `Показано <strong>${files.length}</strong> из ${total} материалов`;
+  if (_renderTimer) cancelAnimationFrame(_renderTimer);
+  _renderTimer = requestAnimationFrame(() => {
+    const grid = document.getElementById('filesGrid');
+    const files = getFiltered();
+    const total = allFiles.length;
+    document.getElementById('statsCount').innerHTML =
+      `Показано <strong>${files.length}</strong> из ${total} материалов`;
 
-  if (!files.length) {
-    grid.innerHTML = `
-      <div class="state-empty">
-        <div class="empty-icon">🔍</div>
-        <div class="empty-text">Ничего не найдено.<br>Попробуй другой запрос или сброс фильтров.</div>
-      </div>`;
-    return;
-  }
+    if (!files.length) {
+      grid.innerHTML = `
+        <div class="state-empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-text">Ничего не найдено.<br>Попробуй другой запрос или сброс фильтров.</div>
+        </div>`;
+      return;
+    }
 
-  const frag = document.createDocumentFragment();
-  files.forEach((f, i) => {
-    const a = document.createElement('a');
-    a.className = 'file-card';
-    a.href = f.url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.style.cssText = `--card-accent:${f.categoryColor}; animation-delay:${Math.min(i * 0.04, 0.4)}s`;
-    a.innerHTML = `
-      <div class="card-top">
-        <div class="file-type-badge">${extIcon(f.ext)}</div>
-        <span class="cat-badge"
-          style="background:${f.categoryColor}18;border:1px solid ${f.categoryColor}38;color:${f.categoryColor}">
-          ${f.categoryIcon} ${f.categoryLabel}
-        </span>
-      </div>
-      <div class="file-name">${nameWithoutExt(f.name)}</div>
-      <div class="card-meta">
-        <span>${f.ext?.toUpperCase() || 'FILE'}</span>
-        <div class="meta-dot"></div>
-        <span>${fmtSize(f.size)}</span>
-        <div class="meta-dot"></div>
-        <span>${fmtDate(f.modified)}</span>
-      </div>
-      <div class="card-dl">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Скачать файл
-      </div>`;
-    frag.appendChild(a);
+    const frag = document.createDocumentFragment();
+    files.forEach((f, i) => frag.appendChild(makeCard(f, i)));
+    grid.innerHTML = '';
+    grid.appendChild(frag);
   });
-  grid.innerHTML = '';
-  grid.appendChild(frag);
 }
 
 // ══ AUTH ══
@@ -1021,7 +1046,7 @@ function setUser(user) {
   document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
   document.getElementById('userName').textContent = user.username;
   const roleEl = document.getElementById('userRole');
-  roleEl.textContent = user.role === 'admin' ? 'Админ' : 'Читатель';
+  roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
   roleEl.className = 'user-role role-' + (user.role || 'user');
   document.getElementById('logoutBtn').style.display = 'inline-block';
   // Показываем кнопку админ-панели только администраторам
