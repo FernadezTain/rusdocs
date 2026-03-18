@@ -601,6 +601,9 @@ header {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       Войти
     </button>
+    <a href="/admin.html" id="adminBtn" title="Панель администратора" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.3);color:var(--gold);text-decoration:none;transition:all .2s;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </a>
     <div id="userChip">
       <div class="user-av" id="userAv">?</div>
       <span class="user-name" id="userName"></span>
@@ -722,7 +725,12 @@ header {
 <div id="toast"></div>
 
 <script>
-const API = '';
+// Авто-определяем API URL:
+// - на Vercel фронт и бэк на одном домене → ''
+// - если открываешь index.html напрямую из файла → нужен явный адрес сервера
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? `http://${location.hostname}:3000`
+  : '';  // на продакшне (Vercel) — тот же домен
 const EXT_ICONS = {
   pdf: '📄', doc: '📝', docx: '📝',
   ppt: '📊', pptx: '📊', xls: '📈', xlsx: '📈',
@@ -938,6 +946,13 @@ async function doLogin() {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ username, password })
     });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      console.error('Login error:', res.status, text);
+      msg.style.color = '#ff6b6b';
+      msg.textContent = `Ошибка сервера (${res.status}) — открой F12 → Console`;
+      return;
+    }
     const data = await res.json();
     if (data.success) {
       setUser(data.user);
@@ -947,8 +962,10 @@ async function doLogin() {
     } else {
       msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка входа';
     }
-  } catch {
-    msg.style.color = '#ff6b6b'; msg.textContent = 'Ошибка сети';
+  } catch (e) {
+    console.error('Login fetch error:', e);
+    msg.style.color = '#ff6b6b';
+    msg.textContent = 'Нет связи с сервером — открой F12 → Console';
   }
 }
 
@@ -977,8 +994,10 @@ async function doRegister() {
     } else {
       msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка';
     }
-  } catch {
-    msg.style.color = '#ff6b6b'; msg.textContent = 'Ошибка сети';
+  } catch (e) {
+    console.error('Register fetch error:', e);
+    msg.style.color = '#ff6b6b';
+    msg.textContent = 'Нет связи с сервером — открой F12 → Console';
   }
 }
 
@@ -993,6 +1012,9 @@ function setUser(user) {
   roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
   roleEl.className = 'user-role role-' + (user.role || 'user');
   document.getElementById('logoutBtn').style.display = 'inline-block';
+  // Показываем кнопку админ-панели только администраторам
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.style.display = user.role === 'admin' ? 'flex' : 'none';
 }
 
 function doLogout() {
@@ -1001,6 +1023,8 @@ function doLogout() {
   document.getElementById('loginBtn').style.display = '';
   document.getElementById('userChip').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.style.display = 'none';
   showToast('👋 Вы вышли из аккаунта');
 }
 
