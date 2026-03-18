@@ -41,67 +41,63 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 /* LAYOUT */
 #app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem;display:none;}
 
-/* MAIN TABS — slider */
-.tabs-outer{overflow:hidden;margin-bottom:2rem;}
-.main-tabs{
-  display:flex;gap:.5rem;
-  background:rgba(255,255,255,0.04);border-radius:14px;padding:5px;
-  max-width:420px;position:relative;
-  user-select:none;-webkit-user-select:none;
-  cursor:grab;
-}
-.main-tabs.grabbing{cursor:grabbing;}
-.m-tab{
-  flex:1;padding:10px;border:none;background:none;
-  font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;
-  color:var(--muted);border-radius:10px;
-  transition:color .22s,background .22s,box-shadow .22s;
-  pointer-events:none; /* drag handles clicks */
-  white-space:nowrap;
-}
-.m-tab.active{background:rgba(232,201,106,0.14);color:var(--gold);box-shadow:0 2px 12px rgba(232,201,106,0.15);}
-
-/* Sliding tab indicator */
-.tab-indicator{
-  position:absolute;border-radius:10px;
-  background:rgba(232,201,106,0.14);
-  box-shadow:0 2px 12px rgba(232,201,106,0.15);
-  transition:transform .35s cubic-bezier(.22,.68,0,1.2), width .35s cubic-bezier(.22,.68,0,1.2);
-  pointer-events:none;
-  top:5px;height:calc(100% - 10px);
-}
-
-/* Tab panels — horizontal slider */
-.tabs-viewport{
-  overflow:hidden;
+/* ══ TAB SWITCHER — Telegram-style drag slider ══ */
+.tabs-outer{
+  margin-bottom:1.75rem;
   position:relative;
 }
-.tabs-track{
-  display:flex;
-  will-change:transform;
-  transition:transform .42s cubic-bezier(.22,.68,0,1.15);
+/* The pill bar is draggable */
+.main-tabs{
+  display:inline-flex;gap:.5rem;
+  background:rgba(255,255,255,0.04);
+  border-radius:14px;padding:5px;
+  position:relative;
+  user-select:none;-webkit-user-select:none;
+  cursor:grab;
+  touch-action:pan-y;
+  /* Don't overflow — we move the INDICATOR, not the bar */
 }
-.tabs-track.no-transition{transition:none!important;}
-.tab-panel{
-  flex:0 0 100%;min-width:0;
-  padding-right:0;
+.main-tabs.grabbing{cursor:grabbing;}
+
+/* Each tab button */
+.m-tab{
+  flex:none;padding:10px 18px;border:none;background:none;
+  font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;
+  color:var(--muted);border-radius:10px;
+  white-space:nowrap;
+  position:relative;z-index:1;
+  cursor:pointer;
+  transition:color .2s;
+}
+.m-tab.active{color:var(--gold);}
+
+/* Sliding pill behind the active tab */
+.tab-indicator{
+  position:absolute;
+  border-radius:10px;
+  background:rgba(232,201,106,0.14);
+  box-shadow:0 2px 14px rgba(232,201,106,0.15);
+  border:1px solid rgba(232,201,106,0.18);
+  pointer-events:none;
+  top:5px;
+  height:calc(100% - 10px);
+  will-change:left,width;
+  transition:left .35s cubic-bezier(.22,.68,0,1.25),
+             width .3s cubic-bezier(.22,.68,0,1.25);
+}
+/* While dragging — no transition on indicator */
+.main-tabs.grabbing .tab-indicator{
+  transition:none;
 }
 
-/* File views — horizontal slider */
-.views-viewport{
-  overflow:hidden;position:relative;
-  /* Auto height via JS, fallback */
-}
-.views-track{
-  display:flex;align-items:flex-start;
-  will-change:transform;
-  transition:transform .38s cubic-bezier(.22,.68,0,1.15);
-}
-.views-track.no-transition{transition:none!important;}
-.view-slide{
-  flex:0 0 100%;min-width:0;
-  /* Each slide renders fully, overflow hidden on viewport */
-}
+/* Tab panels — simple show/hide, no slider */
+.tab-panel{display:none;}
+.tab-panel.active{display:block;animation:fadeUp .25s ease both;}
+
+/* File views — simple show/hide */
+.views-viewport{}
+.view-slide{display:none;}
+.view-slide.active{display:block;animation:fadeUp .22s ease both;}
 
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
@@ -310,7 +306,7 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 </header>
 
 <div id="app">
-  <!-- Tab bar -->
+  <!-- Tab bar — draggable pill slider -->
   <div class="tabs-outer">
     <div class="main-tabs" id="mainTabs">
       <div class="tab-indicator" id="tabIndicator"></div>
@@ -319,12 +315,8 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
     </div>
   </div>
 
-  <!-- Tab panels viewport -->
-  <div class="tabs-viewport">
-    <div class="tabs-track" id="tabsTrack">
-
   <!-- ═══ FILES TAB ═══ -->
-  <div class="tab-panel" id="tab-files">
+  <div class="tab-panel active" id="tab-files">
     <div class="panel-header">
       <div class="panel-title" id="filesTitle">Управление файлами</div>
         <button class="btn btn-gold" id="addBtn" onclick="openAddModal()">
@@ -344,40 +336,31 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
       </span>
     </div>
 
-    <!-- Views slider -->
-    <div class="views-viewport" id="viewsViewport">
-      <div class="views-track" id="viewsTrack">
+    <!-- Views -->
+    <div id="view-cats" class="view-slide active">
+      <div class="cat-grid" id="catGrid">
+        <div class="state-load"><div class="spinner"></div>Загрузка...</div>
+      </div>
+    </div>
 
-        <!-- SLIDE 0: Категории -->
-        <div class="view-slide" id="view-cats">
-          <div class="cat-grid" id="catGrid">
-            <div class="state-load"><div class="spinner"></div>Загрузка...</div>
-          </div>
-        </div>
+    <div id="view-items" class="view-slide">
+      <div class="items-list" id="itemsList"></div>
+    </div>
 
-        <!-- SLIDE 1: Список папок/разделов -->
-        <div class="view-slide" id="view-items">
-          <div class="items-list" id="itemsList"></div>
-        </div>
-
-        <!-- SLIDE 2: Редактор раздела -->
-        <div class="view-slide" id="view-editor">
-          <div class="editor-bar">
-            <div class="editor-title" id="editorTitle">Раздел</div>
-            <button class="btn btn-gold btn-sm" onclick="openUploadModal()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Добавить файлы
-            </button>
-            <button class="btn btn-red btn-sm" onclick="deleteCurrentSection()">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-              Удалить
-            </button>
-          </div>
-          <div class="files-list" id="filesList"></div>
-        </div>
-
-      </div><!-- /views-track -->
-    </div><!-- /views-viewport -->
+    <div id="view-editor" class="view-slide">
+      <div class="editor-bar">
+        <div class="editor-title" id="editorTitle">Раздел</div>
+        <button class="btn btn-gold btn-sm" onclick="openUploadModal()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Добавить файлы
+        </button>
+        <button class="btn btn-red btn-sm" onclick="deleteCurrentSection()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          Удалить
+        </button>
+      </div>
+      <div class="files-list" id="filesList"></div>
+    </div>
   </div>
 
   <!-- ═══ USERS TAB ═══ -->
@@ -396,8 +379,6 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
     </div>
   </div>
 
-    </div><!-- /tabs-track -->
-  </div><!-- /tabs-viewport -->
 </div><!-- /app -->
 
 <!-- MODAL: CONFIRM DELETE ITEM (папка или раздел) -->
@@ -598,224 +579,133 @@ let currentUser = null;
   renderCats();
   loadUsers();
   requestAnimationFrame(() => initSliders());
+  // Fix: tab-panel[0] should be active on load
+  document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
 })();
 
 const apiH = () => ({'Content-Type':'application/json','x-user-id':currentUser?.id||''});
 
 // ══════════════════════════════════════
-// SLIDER ENGINE — tabs + views
+// TAB PILL SLIDER — Telegram style
 // ══════════════════════════════════════
-let currentTab = 0; // 0=files, 1=users
-let currentView = 0; // 0=cats, 1=items, 2=editor
+let currentTab = 0;
 
-// ── Init slider engine on DOM ready ──
 function initSliders(){
-  initTabSlider();
-  initViewSlider();
-}
+  const tabs    = document.getElementById('mainTabs');
+  const ind     = document.getElementById('tabIndicator');
+  const tabBtns = Array.from(tabs.querySelectorAll('.m-tab'));
 
-// ── Tab bar draggable indicator ──
-function initTabSlider(){
-  const tabs = document.getElementById('mainTabs');
-  const track = document.getElementById('tabsTrack');
-  const indicator = document.getElementById('tabIndicator');
-  const tabBtns = tabs.querySelectorAll('.m-tab');
-
-  // Position indicator
-  function positionIndicator(idx, animate){
+  // ── Place indicator under a tab (no transition if instant) ──
+  function placeIndicator(idx, animate){
     const btn = tabBtns[idx];
-    const tabsRect = tabs.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-    if(!animate) indicator.style.transition = 'none';
-    else indicator.style.transition = '';
-    indicator.style.left = (btn.offsetLeft) + 'px';
-    indicator.style.width = btn.offsetWidth + 'px';
-    if(!animate) requestAnimationFrame(()=>{ indicator.style.transition = ''; });
+    if(!btn) return;
+    if(!animate){ ind.style.transition = 'none'; }
+    ind.style.left  = btn.offsetLeft + 'px';
+    ind.style.width = btn.offsetWidth + 'px';
+    if(!animate) requestAnimationFrame(() => ind.style.transition = '');
   }
 
-  function goTab(idx){
-    currentTab = Math.max(0, Math.min(1, idx));
-    tabBtns.forEach((b,i) => b.classList.toggle('active', i===currentTab));
-    track.style.transform = `translateX(-${currentTab * 100}%)`;
-    positionIndicator(currentTab, true);
-    if(currentTab === 1) loadUsers();
+  // ── Activate tab by index ──
+  function goTab(idx, fromDrag){
+    idx = Math.max(0, Math.min(tabBtns.length - 1, idx));
+    currentTab = idx;
+    tabBtns.forEach((b,i) => b.classList.toggle('active', i===idx));
+    placeIndicator(idx, true);
+    // Show/hide panels
+    document.querySelectorAll('.tab-panel').forEach((p,i) => {
+      p.classList.toggle('active', i===idx);
+    });
+    if(idx === 1) loadUsers();
   }
 
-  // Drag on tabs bar
-  let dragStartX = 0, dragDeltaX = 0, isDraggingTabs = false, tabDragMoved = false;
+  // ── Drag ──
+  let startX=0, dx=0, dragging=false, didMove=false, velX=0, lastX=0, lastT=0;
 
-  tabs.addEventListener('mousedown', startDrag);
-  tabs.addEventListener('touchstart', startDrag, {passive:true});
-
-  function startDrag(e){
-    isDraggingTabs = true; tabDragMoved = false;
-    dragStartX = e.touches ? e.touches[0].clientX : e.clientX;
-    dragDeltaX = 0;
-    tabs.classList.add('grabbing');
-    document.addEventListener('mousemove', onDrag);
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchmove', onDrag, {passive:false});
-    document.addEventListener('touchend', endDrag);
-  }
-
-  function onDrag(e){
-    if(!isDraggingTabs) return;
-    if(e.cancelable) e.preventDefault();
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    dragDeltaX = x - dragStartX;
-    if(Math.abs(dragDeltaX) > 4) tabDragMoved = true;
-    // Move indicator proportionally
-    const tabW = tabBtns[0].offsetWidth;
-    const progress = -dragDeltaX / tabs.offsetWidth;
-    const baseLeft = tabBtns[currentTab].offsetLeft;
-    const clampedLeft = Math.max(5, Math.min(tabs.offsetWidth - tabW - 5, baseLeft + dragDeltaX * -1));
-    indicator.style.transition = 'none';
-    indicator.style.left = (baseLeft - dragDeltaX * 0.4).toFixed(1) + 'px';
-    // Also move track
-    const base = currentTab * 100;
-    const pct = base + (dragDeltaX / tabs.offsetWidth) * -80;
-    track.classList.add('no-transition');
-    track.style.transform = `translateX(-${Math.max(0,Math.min(100,pct))}%)`;
-  }
-
-  function endDrag(e){
-    if(!isDraggingTabs) return;
-    isDraggingTabs = false;
-    tabs.classList.remove('grabbing');
-    track.classList.remove('no-transition');
-    document.removeEventListener('mousemove', onDrag);
-    document.removeEventListener('mouseup', endDrag);
-    document.removeEventListener('touchmove', onDrag);
-    document.removeEventListener('touchend', endDrag);
-    if(tabDragMoved){
-      if(dragDeltaX < -40) goTab(currentTab + 1);
-      else if(dragDeltaX > 40) goTab(currentTab - 1);
-      else goTab(currentTab);
-    }
-  }
-
-  // Click on tab buttons
-  tabBtns.forEach((btn, i) => {
-    btn.addEventListener('click', () => { if(!tabDragMoved) goTab(i); });
-    btn.style.pointerEvents = 'auto';
-  });
-
-  // Init
-  requestAnimationFrame(() => positionIndicator(0, false));
-}
-
-// ── Views slider (cats → items → editor) ──
-const VIEW_NAMES = ['cats','items','editor'];
-
-function initViewSlider(){
-  const track = document.getElementById('viewsTrack');
-  const vp = document.getElementById('viewsViewport');
-  if(!track || !vp) return;
-
-  let startX=0, startY=0, deltaX=0, isDragging=false, moved=false, velX=0, lastX=0, lastT=0;
-
-  function startV(e){
-    isDragging=true; moved=false; velX=0;
+  function onStart(e){
+    dragging=true; didMove=false; velX=0; dx=0;
     startX = e.touches ? e.touches[0].clientX : e.clientX;
-    startY = e.touches ? e.touches[0].clientY : e.clientY;
-    lastX = startX; lastT = Date.now();
-    deltaX=0;
-    track.classList.add('no-transition');
-    document.addEventListener('mousemove', moveV);
-    document.addEventListener('mouseup', endV);
-    document.addEventListener('touchmove', moveV, {passive:false});
-    document.addEventListener('touchend', endV);
+    lastX=startX; lastT=Date.now();
+    tabs.classList.add('grabbing');
+    ind.style.transition='none';
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onEnd);
+    window.addEventListener('touchmove', onMove, {passive:false});
+    window.addEventListener('touchend',  onEnd);
   }
 
-  function moveV(e){
-    if(!isDragging) return;
+  function onMove(e){
+    if(!dragging) return;
     const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    const cy = e.touches ? e.touches[0].clientY : e.clientY;
-    deltaX = cx - startX;
-    // Cancel if vertical scroll
-    if(!moved && Math.abs(cy - startY) > Math.abs(deltaX) + 5){ isDragging=false; track.classList.remove('no-transition'); return; }
-    if(Math.abs(deltaX) > 6){ moved=true; if(e.cancelable) e.preventDefault(); }
-    if(!moved) return;
+    dx = cx - startX;
     const now = Date.now();
     velX = (cx - lastX) / Math.max(1, now - lastT);
     lastX=cx; lastT=now;
-    const base = currentView * vp.offsetWidth;
-    const raw = base - deltaX;
-    const maxSlide = (VIEW_NAMES.length - 1) * vp.offsetWidth;
-    // rubber band at edges
-    let pos;
-    if(raw < 0) pos = raw * 0.15;
-    else if(raw > maxSlide) pos = maxSlide + (raw - maxSlide) * 0.15;
-    else pos = raw;
-    track.style.transform = `translateX(-${pos}px)`;
+    if(Math.abs(dx) > 4){ didMove=true; if(e.cancelable) e.preventDefault(); }
+    if(!didMove) return;
+
+    // Move indicator proportionally between tabs
+    const baseLeft = tabBtns[currentTab].offsetLeft;
+    const baseW    = tabBtns[currentTab].offsetWidth;
+
+    // Direction: dx>0 = dragging right = going to prev tab
+    const dir   = dx > 0 ? -1 : 1;
+    const nextI = currentTab + dir;
+    const nextBtn = tabBtns[nextI];
+
+    if(nextBtn){
+      const totalDist = Math.abs(nextBtn.offsetLeft - baseLeft);
+      const progress  = Math.min(1, Math.abs(dx) / Math.max(totalDist, 80));
+      const newLeft   = baseLeft + (nextBtn.offsetLeft - baseLeft) * progress;
+      const newW      = baseW    + (nextBtn.offsetWidth - baseW)   * progress;
+      ind.style.left  = newLeft + 'px';
+      ind.style.width = newW + 'px';
+    } else {
+      // Rubber-band: small nudge at edge
+      const nudge = dx * 0.12;
+      ind.style.left = (baseLeft + nudge) + 'px';
+    }
   }
 
-  function endV(){
-    if(!isDragging) return;
-    isDragging=false;
-    track.classList.remove('no-transition');
-    document.removeEventListener('mousemove', moveV);
-    document.removeEventListener('mouseup', endV);
-    document.removeEventListener('touchmove', moveV);
-    document.removeEventListener('touchend', endV);
-    if(!moved){ applyViewTransform(currentView); return; }
-    // Snap with inertia
-    const vp = document.getElementById('viewsViewport');
-    const projected = deltaX + velX * 120; // project with velocity
-    let target = currentView;
-    if(projected < -60) target = Math.min(currentView + 1, VIEW_NAMES.length - 1);
-    else if(projected > 60) target = Math.max(currentView - 1, 0);
-    // Can only go back, or to already-loaded views
-    if(target > currentView && !canGoForward()) target = currentView;
-    if(target < currentView) slideToView(target, true); // going back
-    else if(target > currentView) slideToView(target, false);
-    else applyViewTransform(currentView);
+  function onEnd(){
+    if(!dragging) return;
+    dragging=false;
+    tabs.classList.remove('grabbing');
+    ind.style.transition = '';
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup',   onEnd);
+    window.removeEventListener('touchmove', onMove);
+    window.removeEventListener('touchend',  onEnd);
+
+    if(didMove){
+      // Inertia: project dx with velocity
+      const projected = dx + velX * 100;
+      if(projected < -45)      goTab(currentTab + 1, true);
+      else if(projected > 45)  goTab(currentTab - 1, true);
+      else                     goTab(currentTab, true); // snap back
+    }
   }
 
-  vp.addEventListener('mousedown', startV);
-  vp.addEventListener('touchstart', startV, {passive:true});
+  // Click on tabs
+  tabBtns.forEach((btn, i) => {
+    btn.addEventListener('click', () => { if(!didMove) goTab(i); });
+  });
+
+  tabs.addEventListener('mousedown',  onStart);
+  tabs.addEventListener('touchstart', onStart, {passive:true});
+
+  // Init position
+  requestAnimationFrame(() => placeIndicator(0, false));
 }
 
-function canGoForward(){ return false; } // forward navigation only through clicks
-
-function applyViewTransform(idx){
-  const vp = document.getElementById('viewsViewport');
-  const track = document.getElementById('viewsTrack');
-  if(!track || !vp) return;
-  track.style.transform = `translateX(-${idx * vp.offsetWidth}px)`;
-}
-
-function slideToView(idx, isBack){
-  const vp = document.getElementById('viewsViewport');
-  if(!vp) return;
-  const prev = currentView;
-  currentView = idx;
-  const track = document.getElementById('viewsTrack');
-  track.classList.remove('no-transition');
-  applyViewTransform(idx);
-  if(isBack){
-    // Going back via breadcrumb — goTo already called
-  }
-}
-
-// ── showView replacement ──
+// ── showView — simple class toggle with fadeUp animation ──
 function showView(v){
-  const idx = VIEW_NAMES.indexOf(v);
-  if(idx === -1) return;
-  const vp = document.getElementById('viewsViewport');
-  if(!vp){ return; }
-  // Set height of viewport to tallest visible
-  currentView = idx;
-  const track = document.getElementById('viewsTrack');
-  track.classList.remove('no-transition');
-  // Animate
-  requestAnimationFrame(() => applyViewTransform(idx));
+  document.querySelectorAll('.view-slide').forEach(el => {
+    el.classList.toggle('active', el.id === 'view-' + v);
+  });
 }
 
-// ── switchTab replacement ──
-function switchTab(tab){} // kept for compat, handled by goTab
+function switchTab(tab){} // compat stub
 
-// ══ TABS ══ (legacy compat stub)
 
 
 // ══ NAVIGATION STATE ══
@@ -839,7 +729,6 @@ function renderBreadcrumb(){
 function goTo(idx){
   if(idx===-1){
     navStack=[]; activeSection=null;
-    slideToView(0, true);
     showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn();
     document.getElementById('newCatBtn').style.display='flex';
     document.getElementById('addBtn').style.display='none';
