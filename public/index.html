@@ -732,12 +732,24 @@ const API = (location.hostname === 'localhost' || location.hostname === '127.0.0
   ? `http://${location.hostname}:3000`
   : '';  // на продакшне (Vercel) — тот же домен
 const EXT_ICONS = {
-  pdf: '📄', doc: '📝', docx: '📝',
-  ppt: '📊', pptx: '📊', xls: '📈', xlsx: '📈',
-  txt: '📃', zip: '🗜️', rar: '🗜️', jpg: '🖼️',
-  jpeg: '🖼️', png: '🖼️', mp4: '🎬', mp3: '🎵',
+  // Документы
+  pdf:'📄', doc:'📝', docx:'📝', odt:'📝', rtf:'📝', txt:'📃', md:'📃',
+  // Таблицы
+  xls:'📈', xlsx:'📈', ods:'📈', csv:'📈',
+  // Презентации
+  ppt:'📊', pptx:'📊', odp:'📊', key:'📊',
+  // Архивы
+  zip:'🗜️', rar:'🗜️', '7z':'🗜️', tar:'🗜️', gz:'🗜️',
+  // Изображения
+  jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️', svg:'🖼️', bmp:'🖼️',
+  // Видео
+  mp4:'🎬', avi:'🎬', mov:'🎬', mkv:'🎬', wmv:'🎬', webm:'🎬',
+  // Аудио
+  mp3:'🎵', wav:'🎵', ogg:'🎵', flac:'🎵', m4a:'🎵',
+  // Код
+  js:'💻', ts:'💻', html:'💻', css:'💻', py:'💻', java:'💻', cpp:'💻', c:'💻', json:'💻', xml:'💻',
 };
-function extIcon(ext) { return EXT_ICONS[ext?.toLowerCase()] || '📁'; }
+function extIcon(ext) { return EXT_ICONS[ext?.toLowerCase()] || '📄'; }
 function fmtSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return bytes + ' Б';
@@ -1009,7 +1021,7 @@ function setUser(user) {
   document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
   document.getElementById('userName').textContent = user.username;
   const roleEl = document.getElementById('userRole');
-  roleEl.textContent = user.role === 'admin' ? 'Админ' : 'Читатель';
+  roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
   roleEl.className = 'user-role role-' + (user.role || 'user');
   document.getElementById('logoutBtn').style.display = 'inline-block';
   // Показываем кнопку админ-панели только администраторам
