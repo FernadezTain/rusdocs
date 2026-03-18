@@ -169,7 +169,44 @@ app.post("/api/sections", requireAdmin, async (req, res) => {
 
 app.delete("/api/sections/:id", requireAdmin, async (req, res) => {
   try {
-    await sb(`sections?id=eq.${req.params.id}`, { method: "DELETE" });
+    const id = req.params.id;
+
+    // Рекурсивно собираем все дочерние section_id (папки внутри папок)
+    async function collectAllIds(parentId) {
+      const ids = [parentId];
+      const children = await sb(`sections?parent_id=eq.${parentId}&select=id`);
+      for (const child of (children || [])) {
+        const nested = await collectAllIds(child.id);
+        ids.push(...nested);
+      }
+      return ids;
+    }
+
+    const allIds = await collectAllIds(id);
+
+    // Удаляем файлы из Storage для каждого раздела
+    for (const sid of allIds) {
+      const files = await sb(`files?section_id=eq.${sid}&select=url`).catch(() => []);
+      for (const f of (files || [])) {
+        if (f.url && f.url.includes("/storage/v1/object/")) {
+          const match = f.url.match(/\/object\/public\/([^?]+)/);
+          if (match) {
+            fetch(`${SB_URL}/storage/v1/object/${match[1]}`, {
+              method: "DELETE",
+              headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}` }
+            }).catch(() => {});
+          }
+        }
+      }
+      // Удаляем записи файлов из БД
+      await sb(`files?section_id=eq.${sid}`, { method: "DELETE" }).catch(() => {});
+    }
+
+    // Удаляем все дочерние секции (от листьев к корню)
+    for (const sid of allIds.reverse()) {
+      await sb(`sections?id=eq.${sid}`, { method: "DELETE" }).catch(() => {});
+    }
+
     res.json({ success: true });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
@@ -230,7 +267,26 @@ app.post("/api/files-db", requireAdmin, async (req, res) => {
 
 app.delete("/api/files-db/:id", requireAdmin, async (req, res) => {
   try {
+    // 1. Получаем URL файла чтобы удалить из Storage
+    const rows = await sb(`files?id=eq.${req.params.id}&select=url`);
+    const fileUrl = rows?.[0]?.url;
+
+    // 2. Удаляем запись из БД
     await sb(`files?id=eq.${req.params.id}`, { method: "DELETE" });
+
+    // 3. Удаляем из Supabase Storage (не критично если упадёт)
+    if (fileUrl && fileUrl.includes("/storage/v1/object/")) {
+      // Извлекаем путь: всё после /object/RusDocs/
+      const match = fileUrl.match(/\/object\/public\/([^?]+)/);
+      if (match) {
+        const storagePath = match[1]; // например: RusDocs/section_id/filename
+        fetch(`${SB_URL}/storage/v1/object/${storagePath}`, {
+          method: "DELETE",
+          headers: { apikey: SB_SERVICE, Authorization: `Bearer ${SB_SERVICE}` }
+        }).catch(e => console.warn("Storage delete warning:", e.message));
+      }
+    }
+
     res.json({ success: true });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
