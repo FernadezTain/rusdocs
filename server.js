@@ -17,8 +17,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({ origin: true, credentials: true }));
 
-const SB_URL = process.env.SUPABASE_URL;
-const SB_KEY = process.env.SUPABASE_KEY;
+const SB_URL     = process.env.SUPABASE_URL;
+const SB_KEY     = process.env.SUPABASE_KEY;          // anon key — для REST API
+const SB_SERVICE = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY; // service_role — для Storage
 
 const sbH = () => ({
   apikey: SB_KEY,
@@ -160,13 +161,14 @@ app.post("/api/files-db", requireAdmin, async (req, res) => {
     const storageKey = `${section_id}/${Date.now()}_${original_name}`;
     const buf = Buffer.from(data, "base64");
 
+    // Storage требует service_role key (не anon)
     const upRes = await fetch(
       `${SB_URL}/storage/v1/object/files/${storageKey}`,
       {
         method: "POST",
         headers: {
-          apikey: SB_KEY,
-          Authorization: `Bearer ${SB_KEY}`,
+          apikey: SB_SERVICE,
+          Authorization: `Bearer ${SB_SERVICE}`,
           "Content-Type": "application/octet-stream",
           "x-upsert": "true"
         },
@@ -178,11 +180,9 @@ app.post("/api/files-db", requireAdmin, async (req, res) => {
     if (upRes.ok) {
       url = `${SB_URL}/storage/v1/object/public/files/${storageKey}`;
     } else {
-      // Fallback: сохраняем base64 data URL если Storage не настроен
       const errText = await upRes.text();
-      console.warn("Storage upload failed:", errText.slice(0,100));
-      url = `data:application/octet-stream;base64,${data.slice(0, 20)}...`;
-      return res.json({ success: false, error: "Настрой Supabase Storage bucket 'files'" });
+      console.error("Storage upload failed:", upRes.status, errText.slice(0, 200));
+      return res.json({ success: false, error: `Storage error ${upRes.status}: ${errText.slice(0,120)}` });
     }
 
     const rows = await sb("files", {
