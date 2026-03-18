@@ -113,21 +113,24 @@ app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
 // ════ ADMIN: SECTIONS ════
 app.get("/api/sections", async (req, res) => {
   try {
-    const q = req.query.category ? `?category=eq.${req.query.category}&order=created_at.desc` : "?order=created_at.desc";
+    let q = "?order=created_at.desc";
+    if (req.query.category) q += `&category=eq.${req.query.category}`;
+    // parent_id: null = корневые, uuid = дочерние
+    if (req.query.parent_id === "null") q += "&parent_id=is.null";
+    else if (req.query.parent_id)       q += `&parent_id=eq.${req.query.parent_id}`;
     const rows = await sb(`sections${q}&select=*`);
     res.json({ success: true, sections: rows });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
 
 app.post("/api/sections", requireAdmin, async (req, res) => {
-  const { category, title } = req.body || {};
+  const { category, title, parent_id } = req.body || {};
   if (!category || !title) return res.json({ success: false, error: "Нет данных" });
   try {
     const userId = req.headers["x-user-id"];
-    const rows = await sb("sections", {
-      method: "POST",
-      body: JSON.stringify({ category, title, created_by: userId })
-    });
+    const payload = { category, title, created_by: userId, is_folder: !!req.body.is_folder };
+    if (parent_id) payload.parent_id = parent_id;
+    const rows = await sb("sections", { method: "POST", body: JSON.stringify(payload) });
     res.json({ success: true, section: rows[0] });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
@@ -202,14 +205,14 @@ app.delete("/api/files-db/:id", requireAdmin, async (req, res) => {
 
 // ════ PUBLIC FILES (старый json-индекс, для совместимости) ════
 const CATEGORY_META = {
-  math:        { label: "Математика",  icon: "∑",  color: "#7eb8ff" },
-  physics:     { label: "Физика",      icon: "⚛",  color: "#b48dff" },
-  chemistry:   { label: "Химия",       icon: "⚗",  color: "#4ecdc4" },
-  history:     { label: "История",     icon: "📜", color: "#ffb87a" },
-  biology:     { label: "Биология",    icon: "🧬", color: "#7de8a0" },
-  literature:  { label: "Литература",  icon: "📖", color: "#ff9ed2" },
-  informatics: { label: "Информатика", icon: "💻", color: "#7eb8ff" },
-  geography:   { label: "География",   icon: "🌍", color: "#4ecdc4" },
+  russian:     { label: "Русский язык",        icon: "Я", color: "#e8c96a" },
+  literature:  { label: "Литература",           icon: "📖", color: "#ff9ed2" },
+  folklore:    { label: "Фольклор",             icon: "🎭", color: "#b48dff" },
+  classical:   { label: "Классика XIX века",    icon: "🪶", color: "#7eb8ff" },
+  modern:      { label: "Литература XX–XXI в.", icon: "✍️", color: "#4ecdc4" },
+  foreign:     { label: "Зарубежная лит-ра",   icon: "🌍", color: "#7de8a0" },
+  theory:      { label: "Теория литературы",    icon: "📐", color: "#ffb87a" },
+  essays:      { label: "Сочинения и эссе",     icon: "📝", color: "#ff9ed2" },
 };
 
 app.get("/api/files", async (_req, res) => {
