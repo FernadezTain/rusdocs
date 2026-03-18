@@ -561,8 +561,17 @@ async function loadCatsFromDB() {
   }
 }
 
-const EXT_ICONS={pdf:'📄',doc:'📝',docx:'📝',ppt:'📊',pptx:'📊',xls:'📈',xlsx:'📈',txt:'📃',zip:'🗜️',rar:'🗜️',jpg:'🖼️',png:'🖼️',mp4:'🎬',mp3:'🎵'};
-const extIcon = e => EXT_ICONS[e?.toLowerCase()]||'📁';
+const EXT_ICONS={
+  pdf:'📄',doc:'📝',docx:'📝',odt:'📝',rtf:'📝',txt:'📃',md:'📃',
+  xls:'📈',xlsx:'📈',ods:'📈',csv:'📈',
+  ppt:'📊',pptx:'📊',odp:'📊',
+  zip:'🗜️',rar:'🗜️','7z':'🗜️',tar:'🗜️',gz:'🗜️',
+  jpg:'🖼️',jpeg:'🖼️',png:'🖼️',gif:'🖼️',webp:'🖼️',svg:'🖼️',bmp:'🖼️',
+  mp4:'🎬',avi:'🎬',mov:'🎬',mkv:'🎬',webm:'🎬',
+  mp3:'🎵',wav:'🎵',ogg:'🎵',flac:'🎵',m4a:'🎵',
+  js:'💻',ts:'💻',html:'💻',css:'💻',py:'💻',json:'💻',xml:'💻',
+};
+const extIcon = e => EXT_ICONS[e?.toLowerCase()]||'📄';
 const fmtSize = b => !b?'—':b<1024?b+'Б':b<1048576?(b/1024).toFixed(0)+'КБ':(b/1048576).toFixed(1)+'МБ';
 const fmtDate = iso => new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
 
@@ -1015,8 +1024,8 @@ async function doUpload(){
     msg.style.color='var(--muted)';msg.textContent=`Загружаем ${file.name}...`;
     try{
       const data=await toBase64(file);
-      const ext=file.name.split('.').pop().toLowerCase();
-      const r=await fetch(`${API}/api/files-db`,{method:'POST',headers:apiH(),body:JSON.stringify({section_id:activeSection.id,original_name:file.name,size:file.size,ext,data})});
+      const extRaw=file.name.includes('.')?file.name.split('.').pop().toLowerCase():''; const ext=/^[a-z0-9]{1,5}$/.test(extRaw)?extRaw:'';
+      const r=await fetch(`${API}/api/files-db`,{method:'POST',headers:apiH(),body:JSON.stringify({section_id:activeSection.id,original_name:file.name,size:file.size,ext:extRaw||ext,data})});
       const d=await r.json();
       if(!d.success)throw new Error(d.error);
       done++;fill.style.width=Math.round(done/uploadQueue.length*100)+'%';
