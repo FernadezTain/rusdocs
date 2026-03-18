@@ -741,7 +741,7 @@ function goTo(idx){
     navStack=[]; activeSection=null;
     showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn();
     document.getElementById('newCatBtn').style.display='flex';
-    document.getElementById('addBtn').style.display='none';
+    document.getElementById('addBtn').style.display='flex';
     return;
   }
   navStack = navStack.slice(0,idx+1);
@@ -751,10 +751,6 @@ function goTo(idx){
     showView('items'); loadItems(level.category, level.type==='cat'?null:level.id);
   }
   renderBreadcrumb(); updateAddBtn();
-}
-
-function showView(v){
-  ['cats','items','editor'].forEach(x=>document.getElementById('view-'+x).style.display=x===v?'':'none');
 }
 
 function updateAddBtn(){
