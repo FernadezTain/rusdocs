@@ -539,6 +539,10 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 <script>
 const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? `http://${location.hostname}:3000` : '';
 
+// ══ AUTH STATE — объявляем раньше всего, т.к. apiH нужна в loadCatsFromDB ══
+let currentUser = null;
+const apiH = () => ({'Content-Type':'application/json','x-user-id':currentUser?.id||''});
+
 // Категории загружаются из БД
 let CATS = {}; // slug -> {label,icon,color,is_default,id}
 let catsArray = []; // для рендера в правильном порядке
@@ -576,7 +580,6 @@ const fmtSize = b => !b?'—':b<1024?b+'Б':b<1048576?(b/1024).toFixed(0)+'КБ'
 const fmtDate = iso => new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
 
 // ══ AUTH ══
-let currentUser = null;
 (async function init(){
   try { currentUser = JSON.parse(localStorage.getItem('methbook_user')); } catch{}
   if(!currentUser||currentUser.role!=='admin'){
@@ -591,8 +594,6 @@ let currentUser = null;
   // Fix: tab-panel[0] should be active on load
   document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
 })();
-
-const apiH = () => ({'Content-Type':'application/json','x-user-id':currentUser?.id||''});
 
 // ══════════════════════════════════════
 // TAB PILL SLIDER — Telegram style
