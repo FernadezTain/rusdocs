@@ -1021,7 +1021,7 @@ function setUser(user) {
   document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
   document.getElementById('userName').textContent = user.username;
   const roleEl = document.getElementById('userRole');
-  roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+  roleEl.textContent = user.role === 'admin' ? 'Админ' : 'Читатель';
   roleEl.className = 'user-role role-' + (user.role || 'user');
   document.getElementById('logoutBtn').style.display = 'inline-block';
   // Показываем кнопку админ-панели только администраторам
