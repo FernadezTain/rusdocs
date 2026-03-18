@@ -361,6 +361,14 @@ app.get("/api/categories", async (_req, res) => {
   }
 });
 
+// Диагностика — показывает все разделы как есть
+app.get("/api/debug/sections", async (_req, res) => {
+  try {
+    const rows = await sb("sections?select=*&order=created_at.desc&limit=50");
+    res.json({ success: true, count: rows?.length, sections: rows });
+  } catch(e) { res.json({ success: false, error: e.message }); }
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
