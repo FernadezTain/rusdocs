@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>МетодКнига — Библиотека учебных материалов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   ROOT & RESET
+══════════════════════════════════════ */
+:root {
+  --bg: #06080f;
+  --bg2: #0b0e1a;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.15);
+  --text: #eef0f8;
+  --muted: rgba(238,240,248,0.45);
+  --muted2: rgba(238,240,248,0.25);
+
+  --gold: #e8c96a;
+  --gold2: #f0da8a;
+  --blue: #6eaeff;
+  --teal: #4ecdc4;
+  --pink: #ff9ed2;
+  --purple: #b48dff;
+
+  --r: 16px;
+  --r-lg: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ══════════════════════════════════════
+   NOISE TEXTURE
+══════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.6;
+}
+
+/* ══════════════════════════════════════
+   BG ORBS
+══════════════════════════════════════ */
+.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(120px); opacity: 0.08;
+  animation: drift 25s ease-in-out infinite alternate;
+}
+.orb1 { width: 600px; height: 600px; background: var(--gold); top: -200px; left: -150px; animation-delay: 0s; }
+.orb2 { width: 500px; height: 500px; background: var(--blue); top: 30%; right: -180px; animation-delay: -10s; }
+.orb3 { width: 450px; height: 450px; background: var(--purple); bottom: -100px; left: 30%; animation-delay: -18s; }
+@keyframes drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -40px) scale(1.05); }
+  100% { transform: translate(-20px, 25px) scale(0.97); }
+}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+header {
+  position: sticky; top: 0; z-index: 100;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(6,8,15,0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 900; color: #06080f;
+  box-shadow: 0 0 20px rgba(232,201,106,0.3);
+}
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text); letter-spacing: -0.3px;
+}
+.logo-text span { color: var(--gold); }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+#loginBtn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 100px;
+  background: rgba(232,201,106,0.1);
+  border: 1px solid rgba(232,201,106,0.3);
+  color: var(--gold); font-family: 'Outfit', sans-serif;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  transition: all .2s; letter-spacing: .3px;
+  -webkit-tap-highlight-color: transparent;
+}
+#loginBtn:hover { background: rgba(232,201,106,0.18); box-shadow: 0 0 20px rgba(232,201,106,0.15); }
+
+#userChip {
+  display: none; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.user-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .72rem; color: #06080f;
+  flex-shrink: 0;
+}
+.user-name { font-size: .8rem; font-weight: 500; }
+.user-role {
+  font-size: .6rem; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
+}
+.user-role.role-user { background: rgba(110,174,255,0.12); color: var(--blue); border: 1px solid rgba(110,174,255,0.2); }
+.user-role.role-admin { background: rgba(232,201,106,0.12); color: var(--gold); border: 1px solid rgba(232,201,106,0.25); }
+
+#logoutBtn {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  padding: 6px 8px; border-radius: 8px; font-size: .75rem;
+  transition: color .2s; display: none; -webkit-tap-highlight-color: transparent;
+}
+#logoutBtn:hover { color: #ff6b6b; }
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero {
+  position: relative; z-index: 2;
+  padding: 5rem 2rem 3.5rem;
+  text-align: center;
+  max-width: 800px; margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .72rem; font-weight: 600; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--gold);
+  padding: 6px 16px; border-radius: 100px;
+  background: rgba(232,201,106,0.08); border: 1px solid rgba(232,201,106,0.2);
+  margin-bottom: 1.5rem;
+  animation: fadeUp .5s ease both;
+}
+.eyebrow-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 8px var(--gold);
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 1rem;
+  animation: fadeUp .55s ease .08s both;
+}
+.hero h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--gold) 30%, var(--gold2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1rem; color: var(--muted);
+  line-height: 1.7; margin-bottom: 2.5rem;
+  animation: fadeUp .6s ease .16s both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════ */
+.search-wrap {
+  position: relative; z-index: 2;
+  display: flex; gap: 10px; max-width: 660px; margin: 0 auto;
+  animation: fadeUp .65s ease .24s both;
+}
+
+.search-input-wrap {
+  flex: 1; position: relative;
+}
+.search-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--muted2); pointer-events: none;
+  display: flex; align-items: center;
+}
+#searchInput {
+  width: 100%; padding: 14px 16px 14px 46px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-bright);
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: .95rem;
+  color: var(--text); outline: none;
+  transition: border-color .25s, background .25s, box-shadow .25s;
+}
+#searchInput::placeholder { color: var(--muted2); }
+#searchInput:focus {
+  border-color: rgba(232,201,106,0.5);
+  background: rgba(232,201,106,0.05);
+  box-shadow: 0 0 0 4px rgba(232,201,106,0.08);
+}
+
+#filterBtn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 20px; border-radius: 100px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-bright);
+  color: var(--text); font-family: 'Outfit', sans-serif;
+  font-size: .85rem; font-weight: 500; cursor: pointer;
+  transition: all .2s; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+#filterBtn:hover, #filterBtn.active {
+  border-color: rgba(232,201,106,0.4);
+  background: rgba(232,201,106,0.08); color: var(--gold);
+}
+#filterBtn svg { transition: transform .25s; }
+#filterBtn.open svg { transform: rotate(180deg); }
+
+/* ══════════════════════════════════════
+   FILTER PANEL
+══════════════════════════════════════ */
+#filterPanel {
+  position: relative; z-index: 2;
+  max-width: 660px; margin: 10px auto 0;
+  background: rgba(11,14,26,0.95);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-lg); padding: 1.25rem;
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  display: none;
+  animation: panelIn .2s ease both;
+}
+#filterPanel.open { display: block; }
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.filter-label {
+  font-size: .65rem; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted2); margin-bottom: .75rem;
+}
+.filter-chips {
+  display: flex; flex-wrap: wrap; gap: .45rem;
+}
+.filter-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: .78rem; font-weight: 500; cursor: pointer;
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.filter-chip:hover { border-color: var(--border-bright); color: var(--text); }
+.filter-chip.active {
+  background: rgba(232,201,106,0.12);
+  border-color: rgba(232,201,106,0.4); color: var(--gold);
+}
+.chip-icon { font-size: .9rem; }
+.filter-clear {
+  margin-top: .85rem; padding-top: .85rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end;
+}
+.filter-clear button {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: .75rem; font-family: 'Outfit', sans-serif;
+  transition: color .18s; -webkit-tap-highlight-color: transparent;
+}
+.filter-clear button:hover { color: var(--text); }
+
+/* ══════════════════════════════════════
+   STATS BAR
+══════════════════════════════════════ */
+.stats-bar {
+  position: relative; z-index: 2;
+  max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.stats-count {
+  font-size: .8rem; color: var(--muted);
+}
+.stats-count strong { color: var(--gold); }
+.stats-sort {
+  margin-left: auto; display: flex; gap: .4rem;
+}
+.sort-btn {
+  padding: 5px 12px; border-radius: 100px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  font-family: 'Outfit', sans-serif; font-size: .72rem;
+  font-weight: 500; color: var(--muted);
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.sort-btn.active {
+  background: rgba(232,201,106,0.1); border-color: rgba(232,201,106,0.3);
+  color: var(--gold);
+}
+
+/* ══════════════════════════════════════
+   FILES GRID
+══════════════════════════════════════ */
+#filesGrid {
+  position: relative; z-index: 2;
+  max-width: 1200px; margin: 1.5rem auto 4rem; padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
+}
+
+.file-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.35rem 1.25rem;
+  cursor: pointer; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .75rem;
+  transition: transform .25s cubic-bezier(.22,.68,0,1.3),
+              border-color .25s, box-shadow .25s, background .25s;
+  position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  animation: cardIn .4s ease both;
+}
+.file-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 60%);
+  opacity: 0; transition: opacity .3s;
+}
+.file-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-accent, var(--border-bright));
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.file-card:hover::before { opacity: 0.06; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem;
+}
+.file-type-badge {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; font-weight: 700;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+}
+.cat-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: .65rem; font-weight: 600; letter-spacing: .5px;
+  white-space: nowrap;
+}
+
+.file-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700; line-height: 1.35;
+  color: var(--text); word-break: break-word;
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: .65rem;
+  font-size: .7rem; color: var(--muted2);
+}
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
+
+.card-dl {
+  display: flex; align-items: center; gap: 7px;
+  margin-top: auto; padding-top: .65rem;
+  border-top: 1px solid var(--border);
+  font-size: .75rem; font-weight: 600;
+  opacity: 0; transition: opacity .2s;
+  color: var(--gold);
+}
+.file-card:hover .card-dl { opacity: 1; }
+
+/* ══════════════════════════════════════
+   STATES
+══════════════════════════════════════ */
+.state-loading {
+  grid-column: 1/-1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 5rem 2rem; gap: 1rem;
+  color: var(--muted);
+}
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(232,201,106,0.15);
+  border-top-color: var(--gold);
+  animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.state-empty {
+  grid-column: 1/-1; text-align: center;
+  padding: 5rem 2rem;
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+.empty-text { color: var(--muted); font-size: .9rem; }
+
+/* ══════════════════════════════════════
+   AUTH MODAL
+══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.show {
+  opacity: 1; pointer-events: all;
+}
+
+.auth-modal {
+  width: 100%; max-width: 400px;
+  background: rgba(11,14,26,0.98);
+  border: 1px solid var(--border-bright);
+  border-radius: 28px; overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+  transform: scale(.92) translateY(16px);
+  transition: transform .3s cubic-bezier(.22,.68,0,1.3);
+  position: relative;
+}
+.modal-overlay.show .auth-modal {
+  transform: scale(1) translateY(0);
+}
+.modal-glow {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, #fff 50%, var(--gold) 70%, transparent);
+}
+
+.modal-header {
+  padding: 2rem 2rem 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.modal-brand {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;
+}
+.modal-brand-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 900; color: #06080f;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -.3px;
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.2rem; padding: 4px 8px;
+  transition: color .18s; line-height: 1; margin-top: -2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.modal-close:hover { color: var(--text); }
+
+.modal-tabs {
+  display: flex; margin: 0 2rem 1.5rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px; padding: 4px;
+}
+.m-tab {
+  flex: 1; padding: 9px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .82rem; font-weight: 600;
+  color: var(--muted); border-radius: 9px;
+  transition: all .22s; -webkit-tap-highlight-color: transparent;
+}
+.m-tab.active {
+  background: rgba(232,201,106,0.12);
+  color: var(--gold); box-shadow: 0 2px 12px rgba(232,201,106,0.15);
+}
+
+.modal-form {
+  padding: 0 2rem 2rem;
+  display: none; flex-direction: column; gap: .85rem;
+}
+.modal-form.active { display: flex; animation: fadeUp .2s ease both; }
+
+.form-group { display: flex; flex-direction: column; gap: .45rem; }
+.form-label {
+  font-size: .67rem; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted2);
+}
+.form-input {
+  padding: 12px 15px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; outline: none;
+  font-family: 'Outfit', sans-serif; font-size: .9rem;
+  color: var(--text); transition: all .2s;
+}
+.form-input::placeholder { color: var(--muted2); }
+.form-input:focus {
+  border-color: rgba(232,201,106,0.5);
+  background: rgba(232,201,106,0.04);
+  box-shadow: 0 0 0 3px rgba(232,201,106,0.08);
+}
+
+.form-msg {
+  font-size: .78rem; min-height: 16px; letter-spacing: .2px;
+}
+
+.form-submit {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, rgba(232,201,106,0.25), rgba(200,160,64,0.18));
+  border: 1px solid rgba(232,201,106,0.4);
+  border-radius: 12px; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .9rem; font-weight: 700;
+  color: var(--gold); letter-spacing: .4px;
+  transition: all .2s; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 24px rgba(232,201,106,0.1);
+}
+.form-submit:hover {
+  background: linear-gradient(135deg, rgba(232,201,106,0.35), rgba(200,160,64,0.26));
+  box-shadow: 0 8px 32px rgba(232,201,106,0.2);
+}
+.form-submit:active { transform: scale(.98); }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(11,14,26,0.96); border: 1px solid var(--border-bright);
+  border-radius: 100px; padding: 10px 20px;
+  font-size: .82rem; font-weight: 500; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 9999; opacity: 0; pointer-events: none;
+  transition: opacity .3s; white-space: nowrap;
+  backdrop-filter: blur(12px);
+}
+#toast.show { opacity: 1; }
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 640px) {
+  header { padding: 0 1rem; }
+  .hero { padding: 3rem 1rem 2.5rem; }
+  .hero h1 { letter-spacing: -.5px; }
+  .search-wrap { padding: 0 1rem; }
+  #filterPanel { margin: 10px 1rem 0; }
+  .stats-bar { padding: 0 1rem; }
+  #filesGrid { padding: 0 1rem; grid-template-columns: 1fr; }
+  .logo-text { display: none; }
+  .search-wrap { flex-direction: column; }
+  #filterBtn { width: 100%; justify-content: center; border-radius: 100px; }
+  .stats-sort { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <a href="/" class="logo">
+    <div class="logo-mark">М</div>
+    <div class="logo-text">Метод<span>Книга</span></div>
+  </a>
+  <div class="header-right">
+    <button id="loginBtn" onclick="openAuthModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Войти
+    </button>
+    <div id="userChip">
+      <div class="user-av" id="userAv">?</div>
+      <span class="user-name" id="userName"></span>
+      <span class="user-role" id="userRole"></span>
+    </div>
+    <button id="logoutBtn" onclick="doLogout()">Выйти</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <div class="eyebrow-dot"></div>
+    Библиотека методических материалов
+  </div>
+  <h1>Все методички<br>в одном <em>месте</em></h1>
+  <p>Ищи, фильтруй и скачивай учебные материалы<br>по любому предмету мгновенно.</p>
+
+  <div class="search-wrap">
+    <div class="search-input-wrap">
+      <div class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <input id="searchInput" type="text" placeholder="Найти методичку...">
+    </div>
+    <button id="filterBtn" onclick="toggleFilter()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Категории
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+  </div>
+
+  <!-- FILTER PANEL -->
+  <div id="filterPanel">
+    <div class="filter-label">Выбери категории</div>
+    <div class="filter-chips" id="filterChips">
+      <div class="filter-chip active" data-cat="all">
+        <span class="chip-icon">📚</span> Все
+      </div>
+    </div>
+    <div class="filter-clear">
+      <button onclick="clearFilters()">Сбросить фильтры</button>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-count" id="statsCount">Загружаем...</div>
+  <div class="stats-sort">
+    <button class="sort-btn active" data-sort="name" onclick="setSort('name', this)">По названию</button>
+    <button class="sort-btn" data-sort="cat" onclick="setSort('cat', this)">По категории</button>
+    <button class="sort-btn" data-sort="date" onclick="setSort('date', this)">По дате</button>
+  </div>
+</div>
+
+<!-- FILES GRID -->
+<div id="filesGrid">
+  <div class="state-loading">
+    <div class="spinner"></div>
+    <span>Загружаем материалы...</span>
+  </div>
+</div>
+
+<!-- ═══ AUTH MODAL ═══ -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <div class="modal-glow"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-brand">
+          <div class="modal-brand-mark">М</div>
+        </div>
+        <div class="modal-title" id="modalTitle">Войти в аккаунт</div>
+      </div>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="m-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+      <button class="m-tab" id="tabReg" onclick="switchTab('reg')">Регистрация</button>
+    </div>
+
+    <!-- LOGIN -->
+    <form class="modal-form active" id="formLogin" onsubmit="return false;">
+      <div class="form-group">
+        <label class="form-label">Логин</label>
+        <input class="form-input" id="loginUser" type="text" placeholder="Введите логин" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" id="loginPass" type="password" placeholder="Введите пароль" autocomplete="current-password">
+      </div>
+      <div class="form-msg" id="loginMsg" style="color:#ff6b6b"></div>
+      <button class="form-submit" onclick="doLogin()">Войти →</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="modal-form" id="formReg" onsubmit="return false;">
+      <div class="form-group">
+        <label class="form-label">Логин</label>
+        <input class="form-input" id="regUser" type="text" placeholder="Придумайте логин" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" id="regPass" type="password" placeholder="Придумайте пароль" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Повторите пароль</label>
+        <input class="form-input" id="regPass2" type="password" placeholder="Повторите пароль" autocomplete="new-password">
+      </div>
+      <div class="form-msg" id="regMsg" style="color:#ff6b6b"></div>
+      <button class="form-submit" onclick="doRegister()">Создать аккаунт →</button>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const API = '';
+const EXT_ICONS = {
+  pdf: '📄', doc: '📝', docx: '📝',
+  ppt: '📊', pptx: '📊', xls: '📈', xlsx: '📈',
+  txt: '📃', zip: '🗜️', rar: '🗜️', jpg: '🖼️',
+  jpeg: '🖼️', png: '🖼️', mp4: '🎬', mp3: '🎵',
+};
+function extIcon(ext) { return EXT_ICONS[ext?.toLowerCase()] || '📁'; }
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' Б';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' КБ';
+  return (bytes/1024/1024).toFixed(1) + ' МБ';
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' });
+}
+function nameWithoutExt(name) {
+  return name.replace(/\.[^/.]+$/, '');
+}
+
+// ══ STATE ══
+let allFiles = [], categories = [], activeFilters = new Set(['all']);
+let sortMode = 'name', currentUser = null;
+let searchQ = '';
+
+// ══ INIT ══
+(async () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('methbook_user'));
+    if (saved) setUser(saved);
+  } catch {}
+  await Promise.all([loadCategories(), loadFiles()]);
+})();
+
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API}/api/categories`);
+    const data = await res.json();
+    categories = data.categories || [];
+    renderFilterChips();
+  } catch (e) { console.warn('categories error', e); }
+}
+
+async function loadFiles() {
+  try {
+    const res = await fetch(`${API}/api/files`);
+    const data = await res.json();
+    allFiles = data.files || [];
+    renderGrid();
+  } catch (e) {
+    document.getElementById('filesGrid').innerHTML = `
+      <div class="state-empty">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-text">Не удалось загрузить файлы</div>
+      </div>`;
+  }
+}
+
+function renderFilterChips() {
+  const chips = document.getElementById('filterChips');
+  const allChip = chips.querySelector('[data-cat="all"]');
+  chips.innerHTML = '';
+  chips.appendChild(allChip);
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-chip';
+    btn.dataset.cat = cat.slug;
+    btn.style.setProperty('--chip-c', cat.color);
+    btn.innerHTML = `<span class="chip-icon">${cat.icon}</span> ${cat.label} <span style="opacity:.5;font-size:.65rem">${cat.count}</span>`;
+    btn.onclick = () => toggleCat(cat.slug, btn);
+    chips.appendChild(btn);
+  });
+}
+
+function toggleCat(slug, el) {
+  if (slug === 'all') {
+    activeFilters.clear(); activeFilters.add('all');
+  } else {
+    activeFilters.delete('all');
+    if (activeFilters.has(slug)) activeFilters.delete(slug);
+    else activeFilters.add(slug);
+    if (!activeFilters.size) activeFilters.add('all');
+  }
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.has(c.dataset.cat));
+  });
+  renderGrid();
+}
+
+function clearFilters() {
+  activeFilters.clear(); activeFilters.add('all');
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.cat === 'all');
+  });
+  renderGrid();
+}
+
+function toggleFilter() {
+  const panel = document.getElementById('filterPanel');
+  const btn = document.getElementById('filterBtn');
+  const open = panel.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQ = e.target.value.toLowerCase().trim();
+  renderGrid();
+});
+
+function setSort(mode, el) {
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function getFiltered() {
+  let files = allFiles.filter(f => {
+    const matchCat = activeFilters.has('all') || activeFilters.has(f.category);
+    const matchQ = !searchQ || nameWithoutExt(f.name).toLowerCase().includes(searchQ)
+                || f.categoryLabel.toLowerCase().includes(searchQ);
+    return matchCat && matchQ;
+  });
+  if (sortMode === 'name') files.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  else if (sortMode === 'cat') files.sort((a, b) => a.categoryLabel.localeCompare(b.categoryLabel, 'ru'));
+  else if (sortMode === 'date') files.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+  return files;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('filesGrid');
+  const files = getFiltered();
+  const total = allFiles.length;
+  document.getElementById('statsCount').innerHTML =
+    `Показано <strong>${files.length}</strong> из ${total} материалов`;
+
+  if (!files.length) {
+    grid.innerHTML = `
+      <div class="state-empty">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-text">Ничего не найдено.<br>Попробуй другой запрос или сброс фильтров.</div>
+      </div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  files.forEach((f, i) => {
+    const a = document.createElement('a');
+    a.className = 'file-card';
+    a.href = f.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.cssText = `--card-accent:${f.categoryColor}; animation-delay:${Math.min(i * 0.04, 0.4)}s`;
+    a.innerHTML = `
+      <div class="card-top">
+        <div class="file-type-badge">${extIcon(f.ext)}</div>
+        <span class="cat-badge"
+          style="background:${f.categoryColor}18;border:1px solid ${f.categoryColor}38;color:${f.categoryColor}">
+          ${f.categoryIcon} ${f.categoryLabel}
+        </span>
+      </div>
+      <div class="file-name">${nameWithoutExt(f.name)}</div>
+      <div class="card-meta">
+        <span>${f.ext?.toUpperCase() || 'FILE'}</span>
+        <div class="meta-dot"></div>
+        <span>${fmtSize(f.size)}</span>
+        <div class="meta-dot"></div>
+        <span>${fmtDate(f.modified)}</span>
+      </div>
+      <div class="card-dl">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Скачать файл
+      </div>`;
+    frag.appendChild(a);
+  });
+  grid.innerHTML = '';
+  grid.appendChild(frag);
+}
+
+// ══ AUTH ══
+function openAuthModal() { document.getElementById('authModal').classList.add('show'); }
+function closeAuthModal() { document.getElementById('authModal').classList.remove('show'); }
+document.getElementById('authModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('authModal')) closeAuthModal();
+});
+
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabReg').classList.toggle('active', !isLogin);
+  document.getElementById('formLogin').classList.toggle('active', isLogin);
+  document.getElementById('formReg').classList.toggle('active', !isLogin);
+  document.getElementById('modalTitle').textContent = isLogin ? 'Войти в аккаунт' : 'Создать аккаунт';
+  document.getElementById('loginMsg').textContent = '';
+  document.getElementById('regMsg').textContent = '';
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('regPass2').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doRegister();
+});
+
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  const msg = document.getElementById('loginMsg');
+  if (!username || !password) { msg.textContent = 'Заполни все поля'; return; }
+  msg.style.color = 'var(--muted)'; msg.textContent = 'Проверяем...';
+  try {
+    const res = await fetch(`${API}/api/login`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      setUser(data.user);
+      localStorage.setItem('methbook_user', JSON.stringify(data.user));
+      closeAuthModal();
+      showToast('✅ Добро пожаловать, ' + data.user.username + '!');
+    } else {
+      msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка входа';
+    }
+  } catch {
+    msg.style.color = '#ff6b6b'; msg.textContent = 'Ошибка сети';
+  }
+}
+
+async function doRegister() {
+  const username = document.getElementById('regUser').value.trim();
+  const password = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  const msg = document.getElementById('regMsg');
+  if (!username || !password) { msg.textContent = 'Заполни все поля'; return; }
+  if (password !== pass2) { msg.textContent = 'Пароли не совпадают'; return; }
+  if (password.length < 4) { msg.textContent = 'Пароль минимум 4 символа'; return; }
+  msg.style.color = 'var(--muted)'; msg.textContent = 'Создаём аккаунт...';
+  try {
+    const res = await fetch(`${API}/api/register`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msg.style.color = '#4ecdc4'; msg.textContent = '✓ Аккаунт создан!';
+      setTimeout(() => {
+        switchTab('login');
+        document.getElementById('loginUser').value = username;
+        msg.textContent = '';
+      }, 1000);
+    } else {
+      msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка';
+    }
+  } catch {
+    msg.style.color = '#ff6b6b'; msg.textContent = 'Ошибка сети';
+  }
+}
+
+function setUser(user) {
+  currentUser = user;
+  document.getElementById('loginBtn').style.display = 'none';
+  const chip = document.getElementById('userChip');
+  chip.style.display = 'flex';
+  document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  const roleEl = document.getElementById('userRole');
+  roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
+  roleEl.className = 'user-role role-' + (user.role || 'user');
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('methbook_user');
+  document.getElementById('loginBtn').style.display = '';
+  document.getElementById('userChip').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'none';
+  showToast('👋 Вы вышли из аккаунта');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
