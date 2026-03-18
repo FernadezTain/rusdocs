@@ -10,46 +10,38 @@ import { fileURLToPath } from "url";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname  = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({ origin: true, credentials: true }));
 
 const SB_URL = process.env.SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_KEY;
 
-if (!SB_URL || !SB_KEY) {
-  console.error("⚠️  SUPABASE_URL или SUPABASE_KEY не заданы!");
-}
-
-const sbHeaders = {
+const sbHeaders = () => ({
   apikey: SB_KEY,
   Authorization: `Bearer ${SB_KEY}`,
   "Content-Type": "application/json",
   Prefer: "return=representation"
-};
+});
 
 async function sbFetch(endpoint, opts = {}) {
   if (!SB_URL || !SB_KEY)
-    throw new Error("Supabase не настроен — добавь SUPABASE_URL и SUPABASE_KEY");
+    throw new Error("SUPABASE_URL / SUPABASE_KEY не заданы в переменных окружения Vercel");
   const res = await fetch(`${SB_URL}/rest/v1/${endpoint}`, {
     ...opts,
-    headers: { ...sbHeaders, ...(opts.headers || {}) }
+    headers: { ...sbHeaders(), ...(opts.headers || {}) }
   });
   const text = await res.text();
-  if (!res.ok) {
-    console.error(`Supabase [${res.status}]:`, text.slice(0, 300));
-    throw new Error(`Supabase ${res.status}: ${text.slice(0, 200)}`);
-  }
+  if (!res.ok) throw new Error(`Supabase ${res.status}: ${text.slice(0, 200)}`);
   try { return JSON.parse(text); } catch { return text; }
 }
 
-// ════ AUTH ════
-
+// ════ REGISTER ════
 app.post("/api/register", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
   if (!username || !password)
     return res.json({ success: false, error: "Заполни все поля" });
   if (username.length < 3)
@@ -69,13 +61,13 @@ app.post("/api/register", async (req, res) => {
       return res.json({ success: true, user: { id: created[0].id, username: created[0].username, role: created[0].role } });
     return res.json({ success: false, error: "Ошибка создания" });
   } catch (e) {
-    console.error("register:", e.message);
     return res.json({ success: false, error: e.message });
   }
 });
 
+// ════ LOGIN ════
 app.post("/api/login", async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body || {};
   if (!username || !password)
     return res.json({ success: false, error: "Заполни все поля" });
   try {
@@ -88,85 +80,58 @@ app.post("/api/login", async (req, res) => {
       return res.json({ success: false, error: "Неверный пароль" });
     return res.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
   } catch (e) {
-    console.error("login:", e.message);
     return res.json({ success: false, error: e.message });
   }
 });
 
 // ════ FILES ════
-// Файлы лежат в public/files/(категория)/файл — деплоятся как статика Vercel
-// Список файлов — public/files-index.json (генерируется через: node generate-index.js)
-
 const CATEGORY_META = {
-  math:        { label: "Математика",    icon: "∑",   color: "#7eb8ff" },
-  physics:     { label: "Физика",        icon: "⚛",   color: "#b48dff" },
-  chemistry:   { label: "Химия",         icon: "⚗",   color: "#4ecdc4" },
-  history:     { label: "История",       icon: "📜",  color: "#ffb87a" },
-  biology:     { label: "Биология",      icon: "🧬",  color: "#7de8a0" },
-  literature:  { label: "Литература",    icon: "📖",  color: "#ff9ed2" },
-  informatics: { label: "Информатика",   icon: "💻",  color: "#7eb8ff" },
-  geography:   { label: "География",     icon: "🌍",  color: "#4ecdc4" },
+  math:        { label: "Математика",  icon: "∑",  color: "#7eb8ff" },
+  physics:     { label: "Физика",      icon: "⚛",  color: "#b48dff" },
+  chemistry:   { label: "Химия",       icon: "⚗",  color: "#4ecdc4" },
+  history:     { label: "История",     icon: "📜", color: "#ffb87a" },
+  biology:     { label: "Биология",    icon: "🧬", color: "#7de8a0" },
+  literature:  { label: "Литература",  icon: "📖", color: "#ff9ed2" },
+  informatics: { label: "Информатика", icon: "💻", color: "#7eb8ff" },
+  geography:   { label: "География",   icon: "🌍", color: "#4ecdc4" },
 };
 
-function loadFilesIndex() {
-  // Сначала public/files-index.json (работает на Vercel)
-  const indexPath = path.join(process.cwd(), "public", "files-index.json");
-  if (fs.existsSync(indexPath)) {
-    try { return JSON.parse(fs.readFileSync(indexPath, "utf8")); }
-    catch (e) { console.error("files-index.json:", e.message); }
+function loadIndex() {
+  const p = path.join(__dirname, "public", "files-index.json");
+  if (fs.existsSync(p)) {
+    try { return JSON.parse(fs.readFileSync(p, "utf8")); } catch {}
   }
-  // Fallback: сканируем public/files/ (только локально)
-  const filesRoot = path.join(process.cwd(), "public", "files");
-  if (!fs.existsSync(filesRoot)) return [];
-  const result = [];
-  try {
-    fs.readdirSync(filesRoot, { withFileTypes: true })
-      .filter(d => d.isDirectory()).forEach(({ name: cat }) => {
-        const catPath = path.join(filesRoot, cat);
-        fs.readdirSync(catPath).filter(f => !f.startsWith(".")).forEach(file => {
-          try {
-            const stat = fs.statSync(path.join(catPath, file));
-            const ext = path.extname(file).toLowerCase().slice(1);
-            result.push({
-              name: file, category: cat,
-              categoryLabel: CATEGORY_META[cat]?.label || cat,
-              categoryColor: CATEGORY_META[cat]?.color || "#888",
-              categoryIcon: CATEGORY_META[cat]?.icon || "📁",
-              ext, size: stat.size,
-              modified: stat.mtime.toISOString(),
-              url: `/files/${cat}/${encodeURIComponent(file)}`
-            });
-          } catch {}
-        });
-      });
-  } catch {}
-  return result;
+  return [];
 }
 
-app.get("/api/files", (req, res) => {
-  res.json({ success: true, files: loadFilesIndex() });
+app.get("/api/files", (_req, res) => {
+  res.json({ success: true, files: loadIndex() });
 });
 
-app.get("/api/categories", (req, res) => {
+app.get("/api/categories", (_req, res) => {
   const map = {};
-  loadFilesIndex().forEach(f => {
-    if (!map[f.category]) map[f.category] = { slug: f.category, label: f.categoryLabel, icon: f.categoryIcon, color: f.categoryColor, count: 0 };
+  loadIndex().forEach(f => {
+    if (!map[f.category])
+      map[f.category] = { slug: f.category, label: f.categoryLabel, icon: f.categoryIcon, color: f.categoryColor, count: 0 };
     map[f.category].count++;
   });
   res.json({ success: true, categories: Object.values(map) });
 });
 
-app.get("/api/health", (req, res) => {
-  const indexPath = path.join(process.cwd(), "public", "files-index.json");
+app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
-    supabase_url: SB_URL ? SB_URL.slice(0, 35) + "..." : "NOT SET ❌",
-    supabase_key: SB_KEY ? "✓ задан" : "NOT SET ❌",
-    files_index_exists: fs.existsSync(indexPath),
-    cwd: process.cwd(),
-    node: process.version,
+    supabase_url: SB_URL ? SB_URL.slice(8, 35) + "..." : "NOT SET ❌",
+    supabase_key: SB_KEY ? "✓" : "NOT SET ❌",
+    index: fs.existsSync(path.join(__dirname, "public", "files-index.json")),
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ http://localhost:${PORT}`));
+// ════ Vercel: экспортируем app, НЕ вызываем listen ════
+// Локально — слушаем порт
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+}
+
+export default app;
