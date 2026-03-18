@@ -110,6 +110,38 @@ app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
 
+// ════ CATEGORIES ════
+app.get("/api/categories-list", async (_req, res) => {
+  try {
+    const rows = await sb("categories?order=is_default.desc,created_at.asc&select=*");
+    res.json({ success: true, categories: rows });
+  } catch (e) { res.json({ success: false, error: e.message }); }
+});
+
+app.post("/api/categories-list", requireAdmin, async (req, res) => {
+  const { label, icon, color } = req.body || {};
+  if (!label) return res.json({ success: false, error: "Нет названия" });
+  // slug из label: латиница + цифры + подчёркивание
+  const slug = "custom_" + Date.now();
+  try {
+    const rows = await sb("categories", {
+      method: "POST",
+      body: JSON.stringify({ slug, label, icon: icon || "📁", color: color || "#7eb8ff", is_default: false, created_by: req.headers["x-user-id"] })
+    });
+    res.json({ success: true, category: rows[0] });
+  } catch (e) { res.json({ success: false, error: e.message }); }
+});
+
+app.delete("/api/categories-list/:id", requireAdmin, async (req, res) => {
+  try {
+    // Проверяем что не дефолтная
+    const rows = await sb(`categories?id=eq.${req.params.id}&select=is_default`);
+    if (rows[0]?.is_default) return res.json({ success: false, error: "Нельзя удалить базовую категорию" });
+    await sb(`categories?id=eq.${req.params.id}`, { method: "DELETE" });
+    res.json({ success: true });
+  } catch (e) { res.json({ success: false, error: e.message }); }
+});
+
 // ════ ADMIN: SECTIONS ════
 app.get("/api/sections", async (req, res) => {
   try {
@@ -246,19 +278,16 @@ app.get("/api/files", async (_req, res) => {
 
 app.get("/api/categories", async (_req, res) => {
   try {
+    // Берём все категории из БД
+    const cats = await sb("categories?order=is_default.desc,created_at.asc&select=*");
     const sections = await sb("sections?select=category");
-    const map = {};
-    (sections || []).forEach(s => {
-      const meta = CATEGORY_META[s.category];
-      if (meta && !map[s.category])
-        map[s.category] = { slug: s.category, ...meta, count: 0 };
-      if (map[s.category]) map[s.category].count++;
-    });
-    // Если разделов нет, возвращаем все категории
-    if (!Object.keys(map).length) {
-      return res.json({ success: true, categories: Object.entries(CATEGORY_META).map(([slug, m]) => ({ slug, ...m, count: 0 })) });
-    }
-    res.json({ success: true, categories: Object.values(map) });
+    const countMap = {};
+    (sections || []).forEach(s => { countMap[s.category] = (countMap[s.category] || 0) + 1; });
+    const result = (cats || []).map(c => ({
+      slug: c.slug, label: c.label, icon: c.icon, color: c.color,
+      is_default: c.is_default, count: countMap[c.slug] || 0
+    }));
+    res.json({ success: true, categories: result });
   } catch (e) { res.json({ success: true, categories: [] }); }
 });
 
