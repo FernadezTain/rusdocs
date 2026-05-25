@@ -3,1249 +3,1291 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Панель администратора — RusDocs</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>МетодКнига — Библиотека учебных материалов</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════
+   ROOT & RESET
+══════════════════════════════════════ */
 :root {
-  --bg:#06080f; --bg2:#0b0e1a;
-  --surface:rgba(255,255,255,0.04); --surface2:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
-  --text:#eef0f8; --muted:rgba(238,240,248,0.45); --muted2:rgba(238,240,248,0.25);
-  --gold:#e8c96a; --gold2:#f0da8a;
-  --blue:#6eaeff; --teal:#4ecdc4; --red:#ff6b6b;
-  --r:14px; --r-lg:20px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-overflow-scrolling:touch;overscroll-behavior-y:none;}
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5;}
-@media(max-width:768px){body::before{display:none;}}
+  --bg: #06080f;
+  --bg2: #0b0e1a;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.15);
+  --text: #eef0f8;
+  --muted: rgba(238,240,248,0.45);
+  --muted2: rgba(238,240,248,0.25);
 
-/* HEADER */
-header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:rgba(6,8,15,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);contain:layout style;}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
-.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--gold),#c8a040);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:.95rem;font-weight:900;color:#06080f;}
-.logo-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);}
-.logo-text span{color:var(--gold);}
-.header-badge{font-size:.62rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:100px;background:rgba(232,201,106,0.12);border:1px solid rgba(232,201,106,0.28);color:var(--gold);}
-.header-right{display:flex;align-items:center;gap:10px;}
-.back-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;background:var(--surface);border:1px solid var(--border2);color:var(--muted);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;}
-.back-btn:hover{color:var(--text);}
+  --gold: #e8c96a;
+  --gold2: #f0da8a;
+  --blue: #6eaeff;
+  --teal: #4ecdc4;
+  --pink: #ff9ed2;
+  --purple: #b48dff;
 
-/* ACCESS DENIED */
-#accessDenied{position:fixed;inset:0;z-index:999;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
-.denied-icon{display:flex;justify-content:center;}
-.denied-title{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;}
-.denied-text{color:var(--muted);font-size:.9rem;}
-.denied-btn{margin-top:.5rem;padding:10px 24px;border-radius:100px;background:rgba(232,201,106,0.12);border:1px solid rgba(232,201,106,0.3);color:var(--gold);font-family:'Outfit',sans-serif;font-weight:600;cursor:pointer;text-decoration:none;font-size:.85rem;}
-
-/* LAYOUT */
-#app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:2rem;display:none;}
-
-/* ══ TAB SWITCHER — Telegram-style drag slider ══ */
-.tabs-outer{
-  margin-bottom:1.75rem;
-  position:relative;
-}
-/* The pill bar is draggable */
-.main-tabs{
-  display:inline-flex;gap:.5rem;
-  background:rgba(255,255,255,0.04);
-  border-radius:14px;padding:5px;
-  position:relative;
-  user-select:none;-webkit-user-select:none;
-  cursor:grab;
-  touch-action:pan-y;
-  /* Don't overflow — we move the INDICATOR, not the bar */
-}
-.main-tabs.grabbing{cursor:grabbing;}
-
-/* Each tab button */
-.m-tab{
-  flex:none;padding:10px 18px;border:none;background:none;
-  font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;
-  color:var(--muted);border-radius:10px;
-  white-space:nowrap;
-  position:relative;z-index:1;
-  cursor:pointer;
-  transition:color .2s;
-}
-.m-tab.active{color:var(--gold);}
-
-/* Sliding pill behind the active tab */
-.tab-indicator{
-  position:absolute;
-  border-radius:10px;
-  background:rgba(232,201,106,0.14);
-  box-shadow:0 2px 14px rgba(232,201,106,0.15);
-  border:1px solid rgba(232,201,106,0.18);
-  pointer-events:none;
-  top:5px;
-  height:calc(100% - 10px);
-  will-change:left,width;
-  transition:left .35s cubic-bezier(.22,.68,0,1.25),
-             width .3s cubic-bezier(.22,.68,0,1.25);
-}
-/* While dragging — no transition on indicator */
-.main-tabs.grabbing .tab-indicator{
-  transition:none;
+  --r: 16px;
+  --r-lg: 24px;
 }
 
-/* Tab panels — simple show/hide, no slider */
-.tab-panel{display:none;}
-.tab-panel.active{display:block;animation:fadeUp .25s ease both;}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* File views — simple show/hide */
-.views-viewport{}
-.view-slide{display:none;}
-.view-slide.active{display:block;animation:fadeUp .22s ease both;}
+html { scroll-behavior: smooth; }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:100px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:600;transition:all .2s;-webkit-tap-highlight-color:transparent;}
-.btn-gold{background:rgba(232,201,106,0.15);border:1px solid rgba(232,201,106,0.35);color:var(--gold);}
-.btn-gold:hover{background:rgba(232,201,106,0.25);}
-.btn-red{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25);color:var(--red);}
-.btn-red:hover{background:rgba(255,107,107,0.18);}
-.btn-ghost{background:var(--surface);border:1px solid var(--border2);color:var(--muted);}
-.btn-ghost:hover{color:var(--text);}
-.btn-sm{padding:6px 12px;font-size:.75rem;}
-.btn-blue{background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.25);color:var(--blue);}
-.btn-blue:hover{background:rgba(110,174,255,0.18);}
-
-/* PANEL HEADER */
-.panel-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;}
-.panel-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;flex:1;}
-
-/* BREADCRUMB */
-.breadcrumb{display:flex;align-items:center;gap:.4rem;margin-bottom:1.25rem;font-size:.8rem;color:var(--muted);flex-wrap:wrap;padding:.65rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:100px;}
-.bc-item{cursor:pointer;transition:color .18s;display:flex;align-items:center;gap:4px;}
-.bc-item:hover{color:var(--gold);}
-.bc-sep{opacity:.35;font-size:.75rem;}
-.bc-current{color:var(--text);font-weight:500;}
-
-/* CATEGORY GRID */
-.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.85rem;}
-.cat-card{border-radius:var(--r-lg);padding:1.25rem;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .22s cubic-bezier(.22,.68,0,1.3);position:relative;overflow:hidden;contain:layout style;}
-.cat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--cc,transparent) 0%,transparent 60%);opacity:.07;}
-.cat-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,0.18);background:var(--surface2);}
-.cat-icon{font-size:1.8rem;margin-bottom:.65rem;display:block;}
-.cat-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:.3rem;}
-.cat-count{font-size:.7rem;color:var(--muted);}
-
-/* FOLDER/SECTION LIST */
-.items-list{display:flex;flex-direction:column;gap:.5rem;}
-.item-row{display:flex;align-items:center;gap:.85rem;padding:.9rem 1.25rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .2s;contain:layout style;}
-.item-row:hover{background:var(--surface2);border-color:var(--border2);transform:translateX(3px);}
-.item-row.is-folder{border-left:3px solid rgba(232,201,106,0.4);}
-.item-row.is-folder:hover{border-left-color:var(--gold);}
-.item-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
-.item-icon.folder{background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.2);}
-.item-icon.section{background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.18);}
-.item-name{flex:1;font-weight:600;font-size:.88rem;}
-.item-meta{font-size:.68rem;color:var(--muted);white-space:nowrap;}
-.item-arrow{color:var(--muted2);flex-shrink:0;}
-.item-del-btn{
-  background:none;border:none;cursor:pointer;
-  color:var(--muted2);padding:6px 8px;border-radius:8px;
-  display:flex;align-items:center;flex-shrink:0;
-  transition:all .18s;opacity:0;
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  /* Плавный скролл на мобилке */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
-.item-row:hover .item-del-btn{opacity:1;}
-.item-del-btn:hover{color:var(--red);background:rgba(255,107,107,0.12);}
 
-/* EDITOR BAR */
-.editor-bar{display:flex;align-items:center;gap:.6rem;margin-bottom:1.25rem;padding:1rem 1.25rem;border-radius:var(--r);background:rgba(232,201,106,0.06);border:1px solid rgba(232,201,106,0.18);flex-wrap:wrap;}
-.editor-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;flex:1;min-width:140px;}
-
-/* FILES */
-.files-list{display:flex;flex-direction:column;gap:.45rem;margin-top:.75rem;}
-.file-row{display:flex;align-items:center;gap:.75rem;padding:.7rem 1rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);}
-.file-ico{width:32px;height:32px;border-radius:8px;background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.18);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;}
-.file-name{flex:1;font-size:.83rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.file-size{font-size:.68rem;color:var(--muted);white-space:nowrap;}
-.file-open{color:var(--blue);font-size:.7rem;text-decoration:none;padding:4px 9px;border-radius:7px;background:rgba(110,174,255,0.08);border:1px solid rgba(110,174,255,0.18);white-space:nowrap;transition:background .18s;}
-.file-open:hover{background:rgba(110,174,255,0.16);}
-.file-del{background:none;border:none;cursor:pointer;color:var(--muted2);padding:5px 7px;border-radius:7px;transition:all .18s;display:flex;align-items:center;flex-shrink:0;}
-.file-del:hover{color:var(--red);background:rgba(255,107,107,0.1);}
-
-/* UPLOAD */
-.upload-zone{border:2px dashed rgba(232,201,106,0.25);border-radius:var(--r-lg);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(232,201,106,0.02);margin-bottom:.85rem;}
-.upload-zone:hover,.upload-zone.drag{border-color:rgba(232,201,106,0.55);background:rgba(232,201,106,0.07);}
-.upload-zone-ico{margin-bottom:.5rem;display:flex;justify-content:center;}
-.upload-zone-text{font-size:.83rem;color:var(--muted);line-height:1.6;}
-.upload-zone-text strong{color:var(--gold);}
-#fileInput{display:none;}
-.queue-wrap{display:flex;flex-direction:column;gap:.4rem;max-height:200px;overflow-y:auto;}
-.queue-item{display:flex;align-items:center;gap:.6rem;padding:.5rem .85rem;border-radius:10px;background:var(--surface);border:1px solid var(--border);font-size:.78rem;}
-.queue-item-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.queue-item-size{color:var(--muted);font-size:.68rem;white-space:nowrap;}
-.queue-remove{background:none;border:none;cursor:pointer;color:var(--muted2);font-size:1rem;line-height:1;padding:1px 5px;transition:color .15s;}
-.queue-remove:hover{color:var(--red);}
-.progress-bar{height:3px;border-radius:100px;background:rgba(255,255,255,0.07);overflow:hidden;margin-top:.5rem;}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:100px;transition:width .35s;}
-
-/* USERS */
-.users-search-wrap{position:relative;margin-bottom:1.25rem;}
-.users-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted2);pointer-events:none;}
-.users-search{width:100%;max-width:420px;padding:11px 14px 11px 42px;background:var(--surface);border:1px solid var(--border2);border-radius:100px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border-color .2s;}
-.users-search::placeholder{color:var(--muted2);}
-.users-search:focus{border-color:rgba(232,201,106,0.4);}
-.users-list{display:flex;flex-direction:column;gap:.5rem;}
-.user-row{display:flex;align-items:center;gap:.85rem;padding:.9rem 1.25rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);transition:border-color .2s;}
-.user-row:hover{border-color:var(--border2);}
-.user-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#c8a040);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;font-size:.85rem;color:#06080f;flex-shrink:0;}
-.user-info{flex:1;min-width:0;}
-.user-nick{font-weight:600;font-size:.88rem;}
-.user-date{font-size:.65rem;color:var(--muted2);margin-top:.1rem;}
-.role-badge{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;white-space:nowrap;}
-.role-user {background:rgba(110,174,255,0.1);border:1px solid rgba(110,174,255,0.22);color:var(--blue);}
-.role-admin{background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.25);color:var(--gold);}
-.edit-btn{width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
-.edit-btn:hover{color:var(--gold);border-color:rgba(232,201,106,0.3);background:rgba(232,201,106,0.08);}
-
-/* MODAL */
-.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .22s;}
-.overlay.show{opacity:1;pointer-events:all;}
-.modal{width:100%;max-width:460px;background:rgba(11,14,26,0.98);border:1px solid var(--border2);border-radius:24px;padding:1.75rem;box-shadow:0 40px 80px rgba(0,0,0,.75);transform:scale(.93) translateY(12px);transition:transform .28s cubic-bezier(.22,.68,0,1.3);position:relative;}
-.modal::before{content:'';position:absolute;top:0;left:8%;right:8%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,201,106,.5) 35%,rgba(255,255,255,.8) 50%,rgba(232,201,106,.5) 65%,transparent);}
-.overlay.show .modal{transform:scale(1) translateY(0);}
-.modal-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;margin-bottom:1.35rem;}
-.modal-close{position:absolute;top:1.25rem;right:1.25rem;background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;padding:4px 7px;transition:color .18s;line-height:1;}
-.modal-close:hover{color:var(--text);}
-.field-group{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.9rem;}
-.field-label{font-size:.63rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted2);}
-.field-input{padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:11px;font-family:'Outfit',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:all .2s;width:100%;}
-.field-input::placeholder{color:var(--muted2);}
-.field-input:focus{border-color:rgba(232,201,106,.45);background:rgba(232,201,106,.04);box-shadow:0 0 0 3px rgba(232,201,106,.08);}
-.role-selector{display:flex;gap:.5rem;}
-.role-opt{flex:1;padding:9px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;text-align:center;}
-.role-opt.active.user {background:rgba(110,174,255,0.12);border-color:rgba(110,174,255,0.3);color:var(--blue);}
-.role-opt.active.admin{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
-.modal-btns{display:flex;gap:.6rem;margin-top:1.35rem;}
-.modal-btns .btn{flex:1;justify-content:center;border-radius:11px;padding:11px;font-size:.85rem;}
-.modal-msg{font-size:.77rem;min-height:16px;margin-top:.4rem;}
-
-/* Cat select grid */
-.cat-select-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem;}
-.cat-opt{padding:8px 10px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted);transition:all .2s;display:flex;align-items:center;gap:6px;}
-.cat-opt:hover{border-color:var(--border2);color:var(--text);}
-.cat-opt.active{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
-
-/* Type selector */
-.type-selector{display:flex;gap:.5rem;margin-bottom:.9rem;}
-.type-opt{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;}
-.type-opt .type-ico{font-size:1.3rem;}
-.type-opt.active{background:rgba(232,201,106,0.12);border-color:rgba(232,201,106,0.3);color:var(--gold);}
-
-/* Cat delete btn */
-.cat-card{position:relative;}
-.cat-delete-btn{
-  position:absolute;top:10px;right:10px;
-  width:22px;height:22px;border-radius:50%;
-  background:rgba(255,107,107,0.0);border:1px solid rgba(255,255,255,0.1);
-  color:var(--muted2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .18s;z-index:10;
-  opacity:0;
+/* ══════════════════════════════════════
+   NOISE TEXTURE
+══════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.6;
 }
-.cat-card:hover .cat-delete-btn{opacity:1;}
-.cat-delete-btn:hover{background:rgba(255,107,107,0.25);border-color:rgba(255,107,107,0.5);color:var(--red);}
+@media (max-width: 768px) { body::before { display: none; } }
 
-/* Add category card */
-.cat-add-card{
-  border-style:dashed !important;
-  border-color:rgba(255,255,255,0.12) !important;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:120px;
+/* ══════════════════════════════════════
+   BG ORBS
+══════════════════════════════════════ */
+.bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(120px); opacity: 0.08;
+  animation: drift 25s ease-in-out infinite alternate;
+  will-change: transform;
 }
-.cat-add-card:hover{border-color:rgba(232,201,106,0.4) !important;background:rgba(232,201,106,0.04) !important;}
-.cat-add-card:hover .cat-icon{opacity:.7 !important;}
-.cat-add-card:hover .cat-name{opacity:.8 !important;color:var(--gold) !important;}
-
-/* States */
-.spinner{width:26px;height:26px;border-radius:50%;border:2px solid rgba(232,201,106,.15);border-top-color:var(--gold);animation:spin .85s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.state-load{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.83rem;padding:1.5rem 0;}
-.state-empty{text-align:center;padding:2.5rem 1rem;color:var(--muted);font-size:.83rem;}
-.state-empty-icon{display:flex;justify-content:center;margin-bottom:.65rem;opacity:.35;}
-
-/* Toast */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(11,14,26,.96);border:1px solid var(--border2);border-radius:100px;padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;backdrop-filter:blur(12px);}
-#toast.show{opacity:1;}
-
-@media(max-width:640px){
-  #app{padding:1rem;}
-  header{padding:0 1rem;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(6,8,15,0.98);}
-  .cat-grid{grid-template-columns:1fr 1fr;}
-  .cat-select-grid{grid-template-columns:1fr 1fr;}
-  /* Отключаем hover-трансформы на тач */
-  .cat-card:hover{transform:none;}
-  .item-row:hover{transform:none;}
-  /* Отключаем fadeUp анимации */
-  .tab-panel.active{animation:none;}
-  .view-slide.active{animation:none;}
+.orb1 { width: 600px; height: 600px; background: var(--gold); top: -200px; left: -150px; animation-delay: 0s; }
+.orb2 { width: 500px; height: 500px; background: var(--blue); top: 30%; right: -180px; animation-delay: -10s; }
+.orb3 { width: 450px; height: 450px; background: var(--purple); bottom: -100px; left: 30%; animation-delay: -18s; }
+@keyframes drift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -40px) scale(1.05); }
+  100% { transform: translate(-20px, 25px) scale(0.97); }
 }
-@media(max-width:768px){
-  .overlay .modal{backdrop-filter:none;-webkit-backdrop-filter:none;}
+/* На мобилке отключаем тяжёлые эффекты */
+@media (max-width: 768px) {
+  .orb { animation: none !important; filter: blur(80px); opacity: 0.05; }
+  .bg-orbs { display: none; }
+}
+
+/* ══════════════════════════════════════
+   HEADER
+══════════════════════════════════════ */
+header {
+  position: sticky; top: 0; z-index: 100;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem;
+  background: rgba(6,8,15,0.95);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 900; color: #06080f;
+  box-shadow: 0 0 20px rgba(232,201,106,0.3);
+}
+.logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text); letter-spacing: -0.3px;
+}
+.logo-text span { color: var(--gold); }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+#loginBtn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px; border-radius: 100px;
+  background: rgba(232,201,106,0.1);
+  border: 1px solid rgba(232,201,106,0.3);
+  color: var(--gold); font-family: 'Outfit', sans-serif;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+  transition: all .2s; letter-spacing: .3px;
+  -webkit-tap-highlight-color: transparent;
+}
+#loginBtn:hover { background: rgba(232,201,106,0.18); box-shadow: 0 0 20px rgba(232,201,106,0.15); }
+
+#userChip {
+  display: none; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.user-av {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .72rem; color: #06080f;
+  flex-shrink: 0;
+}
+.user-name { font-size: .8rem; font-weight: 500; }
+.user-role {
+  font-size: .6rem; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
+}
+.user-role.role-user { background: rgba(110,174,255,0.12); color: var(--blue); border: 1px solid rgba(110,174,255,0.2); }
+.user-role.role-admin { background: rgba(232,201,106,0.12); color: var(--gold); border: 1px solid rgba(232,201,106,0.25); }
+
+#logoutBtn {
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  padding: 6px 8px; border-radius: 8px; font-size: .75rem;
+  transition: color .2s; display: none; -webkit-tap-highlight-color: transparent;
+}
+#logoutBtn:hover { color: #ff6b6b; }
+
+/* ══════════════════════════════════════
+   HERO
+══════════════════════════════════════ */
+.hero {
+  position: relative; z-index: 2;
+  padding: 5rem 2rem 3.5rem;
+  text-align: center;
+  max-width: 800px; margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .72rem; font-weight: 600; letter-spacing: 2.5px;
+  text-transform: uppercase; color: var(--gold);
+  padding: 6px 16px; border-radius: 100px;
+  background: rgba(232,201,106,0.08); border: 1px solid rgba(232,201,106,0.2);
+  margin-bottom: 1.5rem;
+  animation: fadeUp .5s ease both;
+}
+.eyebrow-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 8px var(--gold);
+  animation: blink 2s ease infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  font-weight: 900; line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin-bottom: 1rem;
+  animation: fadeUp .55s ease .08s both;
+}
+.hero h1 em {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--gold) 30%, var(--gold2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1rem; color: var(--muted);
+  line-height: 1.7; margin-bottom: 2.5rem;
+  animation: fadeUp .6s ease .16s both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════ */
+.search-wrap {
+  position: relative; z-index: 2;
+  display: flex; gap: 10px; max-width: 660px; margin: 0 auto;
+  animation: fadeUp .65s ease .24s both;
+}
+
+.search-input-wrap {
+  flex: 1; position: relative;
+}
+.search-icon {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  color: var(--muted2); pointer-events: none;
+  display: flex; align-items: center;
+}
+#searchInput {
+  width: 100%; padding: 14px 16px 14px 46px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-bright);
+  border-radius: 100px;
+  font-family: 'Outfit', sans-serif; font-size: .95rem;
+  color: var(--text); outline: none;
+  transition: border-color .25s, background .25s, box-shadow .25s;
+}
+#searchInput::placeholder { color: var(--muted2); }
+#searchInput:focus {
+  border-color: rgba(232,201,106,0.5);
+  background: rgba(232,201,106,0.05);
+  box-shadow: 0 0 0 4px rgba(232,201,106,0.08);
+}
+
+#filterBtn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 20px; border-radius: 100px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-bright);
+  color: var(--text); font-family: 'Outfit', sans-serif;
+  font-size: .85rem; font-weight: 500; cursor: pointer;
+  transition: all .2s; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+#filterBtn:hover, #filterBtn.active {
+  border-color: rgba(232,201,106,0.4);
+  background: rgba(232,201,106,0.08); color: var(--gold);
+}
+#filterBtn svg { transition: transform .25s; }
+#filterBtn.open svg { transform: rotate(180deg); }
+
+/* ══════════════════════════════════════
+   FILTER PANEL
+══════════════════════════════════════ */
+#filterPanel {
+  position: relative; z-index: 2;
+  max-width: 660px; margin: 10px auto 0;
+  background: rgba(11,14,26,0.95);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-lg); padding: 1.25rem;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  display: none;
+  animation: panelIn .2s ease both;
+}
+#filterPanel.open { display: block; }
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.filter-label {
+  font-size: .65rem; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted2); margin-bottom: .75rem;
+}
+.filter-chips {
+  display: flex; flex-wrap: wrap; gap: .45rem;
+}
+.filter-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 100px;
+  background: var(--surface); border: 1px solid var(--border);
+  font-size: .78rem; font-weight: 500; cursor: pointer;
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.filter-chip:hover { border-color: var(--border-bright); color: var(--text); }
+.filter-chip.active {
+  background: rgba(232,201,106,0.12);
+  border-color: rgba(232,201,106,0.4); color: var(--gold);
+}
+.chip-icon { font-size: .9rem; }
+.filter-clear {
+  margin-top: .85rem; padding-top: .85rem;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end;
+}
+.filter-clear button {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: .75rem; font-family: 'Outfit', sans-serif;
+  transition: color .18s; -webkit-tap-highlight-color: transparent;
+}
+.filter-clear button:hover { color: var(--text); }
+
+/* ══════════════════════════════════════
+   STATS BAR
+══════════════════════════════════════ */
+.stats-bar {
+  position: relative; z-index: 2;
+  max-width: 1200px; margin: 3rem auto 0; padding: 0 2rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.stats-count {
+  font-size: .8rem; color: var(--muted);
+}
+.stats-count strong { color: var(--gold); }
+.stats-sort {
+  margin-left: auto; display: flex; gap: .4rem;
+}
+.sort-btn {
+  padding: 5px 12px; border-radius: 100px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border);
+  font-family: 'Outfit', sans-serif; font-size: .72rem;
+  font-weight: 500; color: var(--muted);
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.sort-btn.active {
+  background: rgba(232,201,106,0.1); border-color: rgba(232,201,106,0.3);
+  color: var(--gold);
+}
+
+/* ══════════════════════════════════════
+   FILES GRID
+══════════════════════════════════════ */
+#filesGrid {
+  position: relative; z-index: 2;
+  max-width: 1200px; margin: 1.5rem auto 4rem; padding: 0 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 1rem;
+}
+
+.file-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.35rem 1.25rem;
+  cursor: pointer; text-decoration: none; color: inherit;
+  display: flex; flex-direction: column; gap: .75rem;
+  transition: transform .25s cubic-bezier(.22,.68,0,1.3),
+              border-color .25s, box-shadow .25s, background .25s;
+  position: relative; overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  animation: cardIn .4s ease both;
+  contain: layout style;
+}
+.file-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, var(--card-accent, transparent) 0%, transparent 60%);
+  opacity: 0; transition: opacity .3s;
+}
+.file-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-accent, var(--border-bright));
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.file-card:hover::before { opacity: 0.06; }
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem;
+}
+.file-type-badge {
+  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+}
+.file-type-badge svg {
+  width: 20px; height: 20px;
+  stroke: var(--muted); flex-shrink: 0;
+}
+.cat-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: .65rem; font-weight: 600; letter-spacing: .5px;
+  white-space: nowrap;
+}
+
+.file-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem; font-weight: 700; line-height: 1.35;
+  color: var(--text); word-break: break-word;
+}
+
+.card-meta {
+  display: flex; align-items: center; gap: .65rem;
+  font-size: .7rem; color: var(--muted2);
+}
+.meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
+
+.card-actions {
+  display: flex; gap: .5rem;
+  margin-top: auto; padding-top: .65rem;
+  border-top: 1px solid var(--border);
+  opacity: 0; transition: opacity .2s;
+}
+.file-card:hover .card-actions { opacity: 1; }
+.card-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  font-size: .72rem; font-weight: 600;
+  cursor: pointer; transition: all .18s;
+  text-decoration: none; border: none;
+  font-family: 'Outfit', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.card-btn-open {
+  background: rgba(110,174,255,0.1);
+  border: 1px solid rgba(110,174,255,0.25);
+  color: var(--blue);
+}
+.card-btn-open:hover { background: rgba(110,174,255,0.2); }
+.card-btn-dl {
+  background: rgba(232,201,106,0.1);
+  border: 1px solid rgba(232,201,106,0.25);
+  color: var(--gold);
+}
+.card-btn-dl:hover { background: rgba(232,201,106,0.2); }
+
+/* ══════════════════════════════════════
+   STATES
+══════════════════════════════════════ */
+.state-loading {
+  grid-column: 1/-1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 5rem 2rem; gap: 1rem;
+  color: var(--muted);
+}
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(232,201,106,0.15);
+  border-top-color: var(--gold);
+  animation: spin .9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.state-empty {
+  grid-column: 1/-1; text-align: center;
+  padding: 5rem 2rem;
+}
+.empty-icon { margin-bottom: 1rem; opacity: .4; display: flex; justify-content: center; }
+.empty-icon svg { stroke: var(--muted); }
+.empty-text { color: var(--muted); font-size: .9rem; }
+
+/* ══════════════════════════════════════
+   AUTH MODAL
+══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.show {
+  opacity: 1; pointer-events: all;
+}
+
+.auth-modal {
+  width: 100%; max-width: 400px;
+  background: rgba(11,14,26,0.98);
+  border: 1px solid var(--border-bright);
+  border-radius: 28px; overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.7);
+  transform: scale(.92) translateY(16px);
+  transition: transform .3s cubic-bezier(.22,.68,0,1.3);
+  position: relative;
+}
+.modal-overlay.show .auth-modal {
+  transform: scale(1) translateY(0);
+}
+.modal-glow {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, #fff 50%, var(--gold) 70%, transparent);
+}
+
+.modal-header {
+  padding: 2rem 2rem 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.modal-brand {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;
+}
+.modal-brand-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), #c8a040);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 900; color: #06080f;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700; letter-spacing: -.3px;
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 1.2rem; padding: 4px 8px;
+  transition: color .18s; line-height: 1; margin-top: -2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.modal-close:hover { color: var(--text); }
+
+.modal-tabs {
+  display: flex; margin: 0 2rem 1.5rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px; padding: 4px;
+}
+.m-tab {
+  flex: 1; padding: 9px;
+  background: none; border: none; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .82rem; font-weight: 600;
+  color: var(--muted); border-radius: 9px;
+  transition: all .22s; -webkit-tap-highlight-color: transparent;
+}
+.m-tab.active {
+  background: rgba(232,201,106,0.12);
+  color: var(--gold); box-shadow: 0 2px 12px rgba(232,201,106,0.15);
+}
+
+.modal-form {
+  padding: 0 2rem 2rem;
+  display: none; flex-direction: column; gap: .85rem;
+}
+.modal-form.active { display: flex; animation: fadeUp .2s ease both; }
+
+.form-group { display: flex; flex-direction: column; gap: .45rem; }
+.form-label {
+  font-size: .67rem; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted2);
+}
+.form-input {
+  padding: 12px 15px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; outline: none;
+  font-family: 'Outfit', sans-serif; font-size: .9rem;
+  color: var(--text); transition: all .2s;
+}
+.form-input::placeholder { color: var(--muted2); }
+.form-input:focus {
+  border-color: rgba(232,201,106,0.5);
+  background: rgba(232,201,106,0.04);
+  box-shadow: 0 0 0 3px rgba(232,201,106,0.08);
+}
+
+.form-msg {
+  font-size: .78rem; min-height: 16px; letter-spacing: .2px;
+}
+
+.form-submit {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, rgba(232,201,106,0.25), rgba(200,160,64,0.18));
+  border: 1px solid rgba(232,201,106,0.4);
+  border-radius: 12px; cursor: pointer;
+  font-family: 'Outfit', sans-serif; font-size: .9rem; font-weight: 700;
+  color: var(--gold); letter-spacing: .4px;
+  transition: all .2s; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 24px rgba(232,201,106,0.1);
+}
+.form-submit:hover {
+  background: linear-gradient(135deg, rgba(232,201,106,0.35), rgba(200,160,64,0.26));
+  box-shadow: 0 8px 32px rgba(232,201,106,0.2);
+}
+.form-submit:active { transform: scale(.98); }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(11,14,26,0.96); border: 1px solid var(--border-bright);
+  border-radius: 100px; padding: 10px 20px;
+  font-size: .82rem; font-weight: 500; color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  z-index: 9999; opacity: 0; pointer-events: none;
+  transition: opacity .3s; white-space: nowrap;
+  backdrop-filter: blur(12px);
+}
+#toast.show { opacity: 1; }
+
+/* ══════════════════════════════════════
+   FILE VIEWER
+══════════════════════════════════════ */
+#fileViewer {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+#fileViewer.show { opacity: 1; pointer-events: all; }
+
+.fv-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px;
+  background: rgba(6,8,15,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.fv-name {
+  flex: 1; font-size: .88rem; font-weight: 600;
+  color: var(--text); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.fv-meta { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+.fv-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); cursor: pointer;
+  transition: all .18s; flex-shrink: 0;
+  text-decoration: none; font-size: .85rem;
+}
+.fv-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+.fv-btn.gold { background: rgba(232,201,106,0.1); border-color: rgba(232,201,106,0.3); color: var(--gold); }
+.fv-btn.gold:hover { background: rgba(232,201,106,0.2); }
+
+.fv-body {
+  flex: 1; display: flex; align-items: center;
+  justify-content: center; overflow: hidden; position: relative;
+}
+
+/* Изображения */
+.fv-img-wrap {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; cursor: zoom-in;
+}
+.fv-img-wrap.zoomed { cursor: zoom-out; overflow: auto; align-items: flex-start; justify-content: flex-start; }
+.fv-img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: transform .3s cubic-bezier(.22,.68,0,1.3);
+  user-select: none; -webkit-user-select: none;
+  pointer-events: none;
+}
+.fv-img-wrap.zoomed .fv-img {
+  max-width: none; max-height: none;
+  transform: scale(2);
+  transform-origin: top left;
+  pointer-events: all;
+}
+
+/* PDF / iframe */
+.fv-iframe {
+  width: 100%; height: 100%;
+  border: none; background: #fff;
+}
+
+/* Неподдерживаемый файл */
+.fv-unsupported {
+  text-align: center; padding: 3rem 2rem;
+}
+.fv-unsupported-ico { font-size: 4rem; margin-bottom: 1rem; display: block; opacity: .5; }
+.fv-unsupported-text { color: var(--muted); font-size: .9rem; line-height: 1.7; }
+
+/* Загрузка */
+.fv-loading {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1rem; color: var(--muted);
+}
+.fv-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(232,201,106,0.15);
+  border-top-color: var(--gold);
+  animation: spin .9s linear infinite;
+}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media (max-width: 640px) {
+  header { padding: 0 1rem; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(6,8,15,0.98); }
+  .hero { padding: 3rem 1rem 2.5rem; }
+  .hero h1 { letter-spacing: -.5px; }
+  .search-wrap { padding: 0 1rem; }
+  #filterPanel { margin: 10px 1rem 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(11,14,26,0.99); }
+  .stats-bar { padding: 0 1rem; }
+  #filesGrid { padding: 0 1rem; grid-template-columns: 1fr; }
+  .logo-text { display: none; }
+  .search-wrap { flex-direction: column; }
+  #filterBtn { width: 100%; justify-content: center; border-radius: 100px; }
+  .stats-sort { display: none; }
+  /* Отключаем тяжёлые анимации */
+  .file-card { animation: none !important; transform: none !important; }
+  .file-card:hover { transform: none !important; }
+  .hero-eyebrow, .hero h1, .hero p, .search-wrap { animation: none !important; }
+  /* Отключаем hover-эффекты на тач-устройствах */
+  .file-card:active { background: rgba(255,255,255,0.06); }
+.card-actions { opacity: 1 !important; }
 }
 </style>
 </head>
 <body>
 
-<div id="accessDenied">
-  <div class="denied-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-  <div class="denied-title">Нет доступа</div>
-  <div class="denied-text">Только для администраторов</div>
-  <a href="/" class="denied-btn">← На главную</a>
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
 </div>
 
+<!-- HEADER -->
 <header>
   <a href="/" class="logo">
-    <div class="logo-mark">Р</div>
-    <div class="logo-text">Рус<span>Docs</span></div>
+    <div class="logo-mark">М</div>
+    <div class="logo-text">Метод<span>Книга</span></div>
   </a>
   <div class="header-right">
-    <span class="header-badge">ADMIN</span>
-    <a href="/" class="back-btn">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
-      На сайт
+    <button id="loginBtn" onclick="openAuthModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Войти
+    </button>
+    <a href="/admin.html" id="adminBtn" title="Панель администратора" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;background:rgba(232,201,106,0.1);border:1px solid rgba(232,201,106,0.3);color:var(--gold);text-decoration:none;transition:all .2s;flex-shrink:0;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </a>
+    <div id="userChip">
+      <div class="user-av" id="userAv">?</div>
+      <span class="user-name" id="userName"></span>
+      <span class="user-role" id="userRole"></span>
+    </div>
+    <button id="logoutBtn" onclick="doLogout()">Выйти</button>
   </div>
 </header>
 
-<div id="app">
-  <!-- Tab bar — draggable pill slider -->
-  <div class="tabs-outer">
-    <div class="main-tabs" id="mainTabs">
-      <div class="tab-indicator" id="tabIndicator"></div>
-      <button class="m-tab active" data-tab="0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Файлы</button>
-      <button class="m-tab" data-tab="1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Пользователи</button>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <div class="eyebrow-dot"></div>
+    Библиотека методических материалов
+  </div>
+  <h1>Все методички<br>в одном <em>месте</em></h1>
+  <p>Ищи, фильтруй и скачивай учебные материалы<br>по любому предмету мгновенно.</p>
+
+  <div class="search-wrap">
+    <div class="search-input-wrap">
+      <div class="search-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <input id="searchInput" type="text" placeholder="Найти методичку...">
     </div>
+    <button id="filterBtn" onclick="toggleFilter()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      Категории
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
   </div>
 
-  <!-- ═══ FILES TAB ═══ -->
-  <div class="tab-panel active" id="tab-files">
-    <div class="panel-header">
-      <div class="panel-title" id="filesTitle">Управление файлами</div>
-        <button class="btn btn-gold" id="addBtn" onclick="openAddModal()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span id="addBtnLabel">Добавить</span>
-      </button>
-      <button class="btn btn-ghost btn-sm" id="newCatBtn" onclick="openNewCatModal()" style="display:none" title="Новая категория">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Новая категория
-      </button>
-    </div>
-
-    <div class="breadcrumb" id="breadcrumb">
-      <span class="bc-current">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Категории
-      </span>
-    </div>
-
-    <!-- Views -->
-    <div id="view-cats" class="view-slide active">
-      <div class="cat-grid" id="catGrid">
-        <div class="state-load"><div class="spinner"></div>Загрузка...</div>
+  <!-- FILTER PANEL -->
+  <div id="filterPanel">
+    <div class="filter-label">Выбери категории</div>
+    <div class="filter-chips" id="filterChips">
+      <div class="filter-chip active" data-cat="all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Все
       </div>
     </div>
-
-    <div id="view-items" class="view-slide">
-      <div class="items-list" id="itemsList"></div>
-    </div>
-
-    <div id="view-editor" class="view-slide">
-      <div class="editor-bar">
-        <div class="editor-title" id="editorTitle">Раздел</div>
-        <button class="btn btn-gold btn-sm" onclick="openUploadModal()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Добавить файлы
-        </button>
-        <button class="btn btn-red btn-sm" onclick="deleteCurrentSection()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-          Удалить
-        </button>
-      </div>
-      <div class="files-list" id="filesList"></div>
+    <div class="filter-clear">
+      <button onclick="clearFilters()">Сбросить фильтры</button>
     </div>
   </div>
+</section>
 
-  <!-- ═══ USERS TAB ═══ -->
-  <div class="tab-panel" id="tab-users">
-    <div class="panel-header">
-      <div class="panel-title">Пользователи</div>
-    </div>
-    <div class="users-search-wrap">
-      <div class="users-search-icon">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </div>
-      <input class="users-search" id="usersSearch" placeholder="Поиск по нику..." oninput="loadUsers()">
-    </div>
-    <div class="users-list" id="usersList">
-      <div class="state-load"><div class="spinner"></div>Загрузка...</div>
-    </div>
-  </div>
-
-</div><!-- /app -->
-
-<!-- MODAL: CONFIRM DELETE ITEM (папка или раздел) -->
-<div class="overlay" id="deleteItemModal">
-  <div class="modal" style="max-width:380px">
-    <div style="text-align:center;margin-bottom:1.25rem">
-      <div style="margin-bottom:.75rem;display:flex;justify-content:center" id="deleteItemEmoji"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
-      <div class="modal-title" style="margin-bottom:.4rem" id="deleteItemTitle">Удалить папку?</div>
-      <div style="font-size:.85rem;color:var(--muted);line-height:1.6">
-        «<strong id="deleteItemName" style="color:var(--text)"></strong>»
-        <span id="deleteItemDesc"> и всё её содержимое будет удалено.</span>
-      </div>
-    </div>
-    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:.85rem 1rem;font-size:.8rem;color:var(--red);margin-bottom:1.25rem;text-align:center;">
-      ⚠️ Это действие необратимо
-    </div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('deleteItemModal')">Нет, отмена</button>
-      <button class="btn btn-red" id="deleteItemConfirmBtn" onclick="confirmDeleteItem()">Да, удалить</button>
-    </div>
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-count" id="statsCount">Загружаем...</div>
+  <div class="stats-sort">
+    <button class="sort-btn active" data-sort="name" onclick="setSort('name', this)">По названию</button>
+    <button class="sort-btn" data-sort="cat" onclick="setSort('cat', this)">По категории</button>
+    <button class="sort-btn" data-sort="date" onclick="setSort('date', this)">По дате</button>
   </div>
 </div>
 
-<!-- MODAL: NEW CATEGORY -->
-<div class="overlay" id="newCatModal">
-  <div class="modal" style="max-width:400px">
-    <button class="modal-close" onclick="closeModal('newCatModal')">✕</button>
-    <div class="modal-title">✨ Создание категории</div>
-    <div class="field-group">
-      <div class="field-label">Смайлик <span style="color:var(--muted2);font-weight:400;letter-spacing:0">(необязательно)</span></div>
-      <input class="field-input" id="newCatIcon" placeholder="📚 или любой символ" maxlength="4" style="font-size:1.4rem;text-align:center;letter-spacing:4px">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Название <span style="color:var(--red)">*</span></div>
-      <input class="field-input" id="newCatLabel" placeholder="Название категории...">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Цвет акцента</div>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap" id="colorPicker"></div>
-    </div>
-    <div class="modal-msg" id="newCatMsg" style="color:var(--red)"></div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('newCatModal')">Отмена</button>
-      <button class="btn btn-gold" onclick="createCategory()">Создать →</button>
-    </div>
+<!-- FILES GRID -->
+<div id="filesGrid">
+  <div class="state-loading">
+    <div class="spinner"></div>
+    <span>Загружаем материалы...</span>
   </div>
 </div>
 
-<!-- MODAL: CONFIRM DELETE CATEGORY -->
-<div class="overlay" id="deleteCatModal">
-  <div class="modal" style="max-width:380px">
-    <div style="text-align:center;margin-bottom:1.25rem">
-      <div style="margin-bottom:.75rem;display:flex;justify-content:center"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></div>
-      <div class="modal-title" style="margin-bottom:.4rem">Удалить категорию?</div>
-      <div style="font-size:.85rem;color:var(--muted);line-height:1.6">Категория <strong id="deleteCatName" style="color:var(--text)"></strong> и все её разделы и файлы будут удалены навсегда.</div>
-    </div>
-    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:.85rem 1rem;font-size:.8rem;color:var(--red);margin-bottom:1.25rem;text-align:center;">
-      ⚠️ Это действие необратимо
-    </div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('deleteCatModal')">Нет, отмена</button>
-      <button class="btn btn-red" id="deleteCatConfirmBtn" onclick="confirmDeleteCat()">Да, удалить</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: ADD (папка или раздел) -->
-<div class="overlay" id="addModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('addModal')">✕</button>
-    <div class="modal-title" id="addModalTitle">Добавить</div>
-
-    <!-- Тип (только на уровне категории) -->
-    <div id="typeSelectWrap">
-      <div class="field-label" style="margin-bottom:.5rem">Тип</div>
-      <div class="type-selector">
-        <button class="type-opt active" id="typeFolder" onclick="selectType('folder')">
-          <span class="type-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>Папка
-        </button>
-        <button class="type-opt" id="typeSection" onclick="selectType('section')">
-          <span class="type-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>Раздел с файлами
-        </button>
+<!-- ═══ AUTH MODAL ═══ -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <div class="modal-glow"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-brand">
+          <div class="modal-brand-mark">М</div>
+        </div>
+        <div class="modal-title" id="modalTitle">Войти в аккаунт</div>
       </div>
+      <button class="modal-close" onclick="closeAuthModal()">✕</button>
     </div>
 
-    <div class="field-group">
-      <div class="field-label">Название</div>
-      <input class="field-input" id="addTitle" placeholder="Введите название...">
+    <div class="modal-tabs">
+      <button class="m-tab active" id="tabLogin" onclick="switchTab('login')">Войти</button>
+      <button class="m-tab" id="tabReg" onclick="switchTab('reg')">Регистрация</button>
     </div>
 
-    <!-- Выбор категории (только на верхнем уровне) -->
-    <div id="catSelectWrap" class="field-group" style="display:none">
-      <div class="field-label">Категория</div>
-      <div class="cat-select-grid" id="catSelectGrid"></div>
-    </div>
-
-    <div class="modal-msg" id="addMsg" style="color:var(--red)"></div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('addModal')">Отмена</button>
-      <button class="btn btn-gold" onclick="doAdd()">Создать →</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: UPLOAD -->
-<div class="overlay" id="uploadModal">
-  <div class="modal" style="max-width:500px">
-    <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
-    <div class="modal-title">Загрузка файлов</div>
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-      <span class="upload-zone-ico"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
-      <div class="upload-zone-text"><strong>Нажми или перетащи файлы</strong><br>PDF, DOCX, PPTX, XLSX и другие</div>
-    </div>
-    <input type="file" id="fileInput" multiple onchange="addToQueue(this.files)">
-    <div class="queue-wrap" id="uploadQueue"></div>
-    <div class="progress-bar" id="progressBar" style="display:none"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-    <div class="modal-msg" id="uploadMsg" style="color:var(--muted)"></div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('uploadModal')">Отмена</button>
-      <button class="btn btn-gold" id="uploadBtn" onclick="doUpload()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Загрузить
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: EDIT USER -->
-<div class="overlay" id="editUserModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('editUserModal')">✕</button>
-    <div class="modal-title">Управление пользователем</div>
-    <div class="field-group">
-      <div class="field-label">Name</div>
-      <input class="field-input" id="editUsername" placeholder="Никнейм">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Password</div>
-      <input class="field-input" id="editPassword" type="password" placeholder="Установлен (оставь пустым чтобы не менять)">
-    </div>
-    <div class="field-group">
-      <div class="field-label">Status</div>
-      <div class="role-selector">
-        <button class="role-opt user" id="roleOptUser" onclick="selectRole('user')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Пользователь</button>
-        <button class="role-opt admin" id="roleOptAdmin" onclick="selectRole('admin')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Администратор</button>
+    <!-- LOGIN -->
+    <form class="modal-form active" id="formLogin" onsubmit="return false;">
+      <div class="form-group">
+        <label class="form-label">Логин</label>
+        <input class="form-input" id="loginUser" type="text" placeholder="Введите логин" autocomplete="username">
       </div>
-    </div>
-    <div class="modal-msg" id="editUserMsg" style="color:var(--red)"></div>
-    <div class="modal-btns">
-      <button class="btn btn-ghost" onclick="closeModal('editUserModal')">Отменить</button>
-      <button class="btn btn-gold" onclick="saveUser()">Сохранить →</button>
-    </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" id="loginPass" type="password" placeholder="Введите пароль" autocomplete="current-password">
+      </div>
+      <div class="form-msg" id="loginMsg" style="color:#ff6b6b"></div>
+      <button class="form-submit" onclick="doLogin()">Войти →</button>
+    </form>
+
+    <!-- REGISTER -->
+    <form class="modal-form" id="formReg" onsubmit="return false;">
+      <div class="form-group">
+        <label class="form-label">Логин</label>
+        <input class="form-input" id="regUser" type="text" placeholder="Придумайте логин" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" id="regPass" type="password" placeholder="Придумайте пароль" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Повторите пароль</label>
+        <input class="form-input" id="regPass2" type="password" placeholder="Повторите пароль" autocomplete="new-password">
+      </div>
+      <div class="form-msg" id="regMsg" style="color:#ff6b6b"></div>
+      <button class="form-submit" onclick="doRegister()">Создать аккаунт →</button>
+    </form>
   </div>
 </div>
 
+<!-- FILE VIEWER -->
+<div id="fileViewer">
+  <div class="fv-header">
+    <div class="fv-name" id="fvName">Файл</div>
+    <div class="fv-meta" id="fvMeta"></div>
+    <a id="fvDownload" href="#" target="_blank" class="fv-btn gold" title="Скачать">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </a>
+    <button class="fv-btn" id="fvClose" title="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="fv-body" id="fvBody">
+    <div class="fv-loading"><div class="fv-spinner"></div><span>Загружаем...</span></div>
+  </div>
+</div>
+
+<!-- TOAST -->
 <div id="toast"></div>
 
+<script src="https://ferniex-id.vercel.app/sdk/fernieid-sdk.js"></script>
 <script>
-const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? `http://${location.hostname}:3000` : '';
-
-// ══ AUTH STATE — объявляем раньше всего, т.к. apiH нужна в loadCatsFromDB ══
-let currentUser = null;
-const apiH = () => ({
-  'Content-Type': 'application/json',
-  'x-fernie-user-id': currentUser?.userId || '',
-  'x-fernie-username': currentUser?.username || ''
-});
-
-// Категории загружаются из БД
-let CATS = {}; // slug -> {label,icon,color,is_default,id}
-let catsArray = []; // для рендера в правильном порядке
-
-async function loadCatsFromDB() {
-  try {
-    const r = await fetch(`${API}/api/categories-list`);
-    const d = await r.json();
-    CATS = {};
-    catsArray = d.categories || [];
-    catsArray.forEach(c => { CATS[c.slug] = c; });
-  } catch(e) {
-    console.warn('loadCatsFromDB error:', e);
-    // fallback
-    catsArray = [
-      {slug:'russian',   label:'Русский язык', icon:'Я',  color:'#e8c96a', is_default:true},
-      {slug:'literature',label:'Литература',    icon:'📖', color:'#ff9ed2', is_default:true},
-    ];
-    catsArray.forEach(c => CATS[c.slug] = c);
-  }
-}
-
-const EXT_GROUPS={doc:['pdf','doc','docx','odt','rtf','txt','md'],sheet:['xls','xlsx','ods','csv'],slide:['ppt','pptx','odp','key'],zip:['zip','rar','7z','tar','gz'],img:['jpg','jpeg','png','gif','webp','svg','bmp'],video:['mp4','avi','mov','mkv','wmv','webm'],audio:['mp3','wav','ogg','flac','m4a'],code:['js','ts','html','css','py','java','cpp','c','json','xml']};
-const EXT_SVG={
-  doc:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+FernieID.init('fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f');
+console.log('скрипт загружен');
+document.addEventListener('click', e => console.log('клик на:', e.target.className, e.target.tagName));
+// Авто-определяем API URL:
+// - на Vercel фронт и бэк на одном домене → ''
+// - если открываешь index.html напрямую из файла → нужен явный адрес сервера
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? `http://${location.hostname}:3000`
+  : '';  // на продакшне (Vercel) — тот же домен
+const EXT_GROUPS = {
+  doc:  ['pdf','doc','docx','odt','rtf','txt','md'],
+  sheet:['xls','xlsx','ods','csv'],
+  slide:['ppt','pptx','odp','key'],
+  zip:  ['zip','rar','7z','tar','gz'],
+  img:  ['jpg','jpeg','png','gif','webp','svg','bmp'],
+  video:['mp4','avi','mov','mkv','wmv','webm'],
+  audio:['mp3','wav','ogg','flac','m4a'],
+  code: ['js','ts','html','css','py','java','cpp','c','json','xml'],
+};
+const EXT_SVG = {
+  doc:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
   sheet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
   slide:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-  zip:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
-  img:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  zip:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+  img:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
   video:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
   audio:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
-  code:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
-  file:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+  code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
 };
-function extGroup(e){const ext=e?.toLowerCase()||'';for(const[g,arr]of Object.entries(EXT_GROUPS))if(arr.includes(ext))return g;return 'file';}
-const extIcon=e=>`<svg width="18" height="18" style="flex-shrink:0;stroke:var(--muted)">${EXT_SVG[extGroup(e)].replace(/<svg[^>]*>/,'')}</svg>`;
-const fmtSize = b => !b?'—':b<1024?b+'Б':b<1048576?(b/1024).toFixed(0)+'КБ':(b/1048576).toFixed(1)+'МБ';
-const fmtDate = iso => new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'short',year:'numeric'});
+function extGroup(ext) {
+  const e = ext?.toLowerCase() || '';
+  for (const [group, exts] of Object.entries(EXT_GROUPS)) {
+    if (exts.includes(e)) return group;
+  }
+  return 'file';
+}
+function extIcon(ext) { return EXT_SVG[extGroup(ext)]; }
+function fmtSize(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' Б';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(0) + ' КБ';
+  return (bytes/1024/1024).toFixed(1) + ' МБ';
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' });
+}
+function nameWithoutExt(name) {
+  return name.replace(/\.[^/.]+$/, '');
+}
+
+// ══ STATE ══
+let allFiles = [], categories = [], activeFilters = new Set(['all']);
+let sortMode = 'name', currentUser = null;
+let searchQ = '';
+
+// ══ INIT ══
+(async () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('fernieid_user'));
+    if (saved) {
+      const r = await fetch(`${API}/api/auth/fernie-check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: saved.userId, username: saved.username })
+      });
+      const d = await r.json();
+      if (d.success) setUser({ ...saved, isAdmin: d.isAdmin });
+      else localStorage.removeItem('fernieid_user');
+    }
+  } catch {}
+  await Promise.all([loadCategories(), loadFiles()]);
+})();
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API}/api/categories`);
+    const data = await res.json();
+    categories = data.categories || [];
+    renderFilterChips();
+  } catch (e) { console.warn('categories error', e); }
+}
+
+async function loadFiles() {
+  try {
+    const res = await fetch(`${API}/api/files`);
+    const data = await res.json();
+    allFiles = data.files || [];
+    renderGrid();
+  } catch (e) {
+    document.getElementById('filesGrid').innerHTML = `
+      <div class="state-empty">
+        <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="empty-text">Не удалось загрузить файлы</div>
+      </div>`;
+  }
+}
+
+function renderFilterChips() {
+  const chips = document.getElementById('filterChips');
+  const allChip = chips.querySelector('[data-cat="all"]');
+  chips.innerHTML = '';
+  chips.appendChild(allChip);
+  categories.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-chip';
+    btn.dataset.cat = cat.slug;
+    btn.style.setProperty('--chip-c', cat.color);
+    btn.innerHTML = `<span class="chip-icon">${cat.icon}</span> ${cat.label} <span style="opacity:.5;font-size:.65rem">${cat.count}</span>`;
+    btn.onclick = () => toggleCat(cat.slug, btn);
+    chips.appendChild(btn);
+  });
+}
+
+function toggleCat(slug, el) {
+  if (slug === 'all') {
+    activeFilters.clear(); activeFilters.add('all');
+  } else {
+    activeFilters.delete('all');
+    if (activeFilters.has(slug)) activeFilters.delete(slug);
+    else activeFilters.add(slug);
+    if (!activeFilters.size) activeFilters.add('all');
+  }
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.has(c.dataset.cat));
+  });
+  renderGrid();
+}
+
+function clearFilters() {
+  activeFilters.clear(); activeFilters.add('all');
+  document.querySelectorAll('.filter-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.cat === 'all');
+  });
+  renderGrid();
+}
+
+function toggleFilter() {
+  const panel = document.getElementById('filterPanel');
+  const btn = document.getElementById('filterBtn');
+  const open = panel.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQ = e.target.value.toLowerCase().trim();
+  renderGrid();
+});
+
+function setSort(mode, el) {
+  sortMode = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function getFiltered() {
+  let files = allFiles.filter(f => {
+    const matchCat = activeFilters.has('all') || activeFilters.has(f.category);
+    const matchQ = !searchQ || nameWithoutExt(f.name).toLowerCase().includes(searchQ)
+                || f.categoryLabel.toLowerCase().includes(searchQ);
+    return matchCat && matchQ;
+  });
+  if (sortMode === 'name') files.sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  else if (sortMode === 'cat') files.sort((a, b) => a.categoryLabel.localeCompare(b.categoryLabel, 'ru'));
+  else if (sortMode === 'date') files.sort((a, b) => new Date(b.modified) - new Date(a.modified));
+  return files;
+}
+
+async function downloadFile(url, name) {
+  try {
+    showToast('⏳ Скачиваем...');
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('✅ Скачано!');
+  } catch (e) {
+    // Фолбэк — просто открываем в новой вкладке
+    window.open(url, '_blank');
+  }
+}
+
+function makeCard(f, i)
+{
+  const div = document.createElement('div');
+  div.className = 'file-card';
+  const viewable = ['pdf','jpg','jpeg','png','gif','webp','bmp','svg','mp4','webm','mp3','wav','ogg','m4a'];
+  const canPreview = viewable.includes(f.ext?.toLowerCase());
+  const isMobile = window.innerWidth <= 640;
+  div.style.cssText = `--card-accent:${f.categoryColor};${isMobile ? '' : `animation-delay:${Math.min(i * 0.04, 0.4)}s`}`;
+  div.innerHTML = `
+    <div class="card-top">
+      <div class="file-type-badge">${extIcon(f.ext)}</div>
+      <span class="cat-badge"
+        style="background:${f.categoryColor}18;border:1px solid ${f.categoryColor}38;color:${f.categoryColor}">
+        ${f.categoryIcon} ${f.categoryLabel}
+      </span>
+    </div>
+    <div class="file-name">${nameWithoutExt(f.name)}</div>
+    <div class="card-meta">
+      <span>${f.ext?.toUpperCase() || 'FILE'}</span>
+      <div class="meta-dot"></div>
+      <span>${fmtSize(f.size)}</span>
+      <div class="meta-dot"></div>
+      <span>${fmtDate(f.modified)}</span>
+    </div>
+    <div class="card-actions">
+      ${canPreview ? `<button class="card-btn card-btn-open">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Открыть
+        </button>` : ''}
+      <button class="card-btn card-btn-dl">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Скачать
+      </button>
+    </div>`;
+
+  if (canPreview) {
+    div.querySelector('.card-btn-open').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openViewer(f);
+    });
+  }
+  div.querySelector('.card-btn-dl').addEventListener('click', (e) => {
+    e.stopPropagation();
+    downloadFile(f.url, f.name);
+  });
+  return div;
+}
+
+let _renderTimer = null;
+function renderGrid() {
+  if (_renderTimer) cancelAnimationFrame(_renderTimer);
+  _renderTimer = requestAnimationFrame(() => {
+    const grid = document.getElementById('filesGrid');
+    const files = getFiltered();
+    const total = allFiles.length;
+    document.getElementById('statsCount').innerHTML =
+      `Показано <strong>${files.length}</strong> из ${total} материалов`;
+
+    if (!files.length) {
+      grid.innerHTML = `
+        <div class="state-empty">
+          <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          <div class="empty-text">Ничего не найдено.<br>Попробуй другой запрос или сброс фильтров.</div>
+        </div>`;
+      return;
+    }
+
+    const frag = document.createDocumentFragment();
+    files.forEach((f, i) => frag.appendChild(makeCard(f, i)));
+    grid.innerHTML = '';
+    grid.appendChild(frag);
+  });
+}
 
 // ══ AUTH ══
-(async function init(){
-  try { currentUser = JSON.parse(localStorage.getItem('fernieid_user')); } catch{}
-  if(!currentUser){
-    document.getElementById('accessDenied').style.display='flex';
+function openAuthModal() { document.getElementById('authModal').classList.add('show'); }
+function closeAuthModal() { document.getElementById('authModal').classList.remove('show'); }
+document.getElementById('authModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('authModal')) closeAuthModal();
+});
+
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tabLogin').classList.toggle('active', isLogin);
+  document.getElementById('tabReg').classList.toggle('active', !isLogin);
+  document.getElementById('formLogin').classList.toggle('active', isLogin);
+  document.getElementById('formReg').classList.toggle('active', !isLogin);
+  document.getElementById('modalTitle').textContent = isLogin ? 'Войти в аккаунт' : 'Создать аккаунт';
+  document.getElementById('loginMsg').textContent = '';
+  document.getElementById('regMsg').textContent = '';
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('regPass2').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doRegister();
+});
+
+async function doLogin() {
+  closeAuthModal();
+  if (typeof FernieID === 'undefined') {
+    showToast('❌ FernieID SDK не загружен');
     return;
   }
-  try {
-    const r = await fetch(`${API}/api/auth/fernie-check`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ userId: currentUser.userId, username: currentUser.username })
+  const data = await FernieID.login();
+  if (!data || !data.success) return;
+  const r = await fetch(`${API}/api/auth/fernie-check`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: data.userId, username: data.username })
+  });
+  const check = await r.json();
+  if (check.success) {
+    const user = { ...data, isAdmin: check.isAdmin };
+    localStorage.setItem('fernieid_user', JSON.stringify(user));
+    setUser(user);
+    showToast('✅ Добро пожаловать, ' + data.username + '!');
+  }
+}
+
+async function doRegister() { await doLogin(); }
+
+function setUser(user) {
+  currentUser = user;
+  document.getElementById('loginBtn').style.display = 'none';
+  const chip = document.getElementById('userChip');
+  chip.style.display = 'flex';
+  document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
+  document.getElementById('userName').textContent = user.username;
+  const roleEl = document.getElementById('userRole');
+  roleEl.textContent = user.isAdmin ? 'Администратор' : 'Пользователь';
+  roleEl.className = 'user-role role-' + (user.isAdmin ? 'admin' : 'user');
+  document.getElementById('logoutBtn').style.display = 'inline-block';
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.style.display = user.isAdmin ? 'flex' : 'none';
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('fernieid_user');
+  document.getElementById('loginBtn').style.display = '';
+  document.getElementById('userChip').style.display = 'none';
+  document.getElementById('logoutBtn').style.display = 'none';
+  const adminBtn = document.getElementById('adminBtn');
+  if (adminBtn) adminBtn.style.display = 'none';
+  showToast('👋 Вы вышли из аккаунта');
+}
+
+// ══ FILE VIEWER ══
+function openViewer(f) {
+  const viewer = document.getElementById('fileViewer');
+  const body   = document.getElementById('fvBody');
+  const ext    = f.ext?.toLowerCase() || '';
+
+  document.getElementById('fvName').textContent = f.name;
+  document.getElementById('fvMeta').textContent = [f.ext?.toUpperCase(), fmtSize(f.size)].filter(Boolean).join(' · ');
+  document.getElementById('fvDownload').href = f.url;
+
+  // Рендер содержимого
+  if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) {
+    body.innerHTML = `<div class="fv-img-wrap" id="fvImgWrap">
+      <img class="fv-img" id="fvImg" src="${f.url}" alt="${f.name}">
+    </div>`;
+    const wrap = document.getElementById('fvImgWrap');
+    const img  = document.getElementById('fvImg');
+    // Зум по клику
+    wrap.addEventListener('click', () => wrap.classList.toggle('zoomed'));
+    // Перетаскивание при зуме
+    let dragging=false, sx=0, sy=0, sl=0, st=0;
+    wrap.addEventListener('mousedown', e => {
+      if(!wrap.classList.contains('zoomed')) return;
+      dragging=true; sx=e.clientX; sy=e.clientY;
+      sl=wrap.scrollLeft; st=wrap.scrollTop;
     });
-    const d = await r.json();
-    if(!d.success || !d.isAdmin){
-      document.getElementById('accessDenied').style.display='flex';
-      return;
-    }
-    currentUser = { ...currentUser, isAdmin: true };
-  } catch {
-    document.getElementById('accessDenied').style.display='flex';
-    return;
-  }
-  document.getElementById('app').style.display='block';
-  await loadCatsFromDB();
-  renderCats();
-  loadUsers();
-  requestAnimationFrame(() => initSliders());
-  // Fix: tab-panel[0] should be active on load
-  document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
-})();
-
-// ══════════════════════════════════════
-// TAB PILL SLIDER — Telegram style
-// ══════════════════════════════════════
-let currentTab = 0;
-
-function initSliders(){
-  const tabs    = document.getElementById('mainTabs');
-  const ind     = document.getElementById('tabIndicator');
-  const tabBtns = Array.from(tabs.querySelectorAll('.m-tab'));
-
-  // ── Place indicator under a tab (no transition if instant) ──
-  function placeIndicator(idx, animate){
-    const btn = tabBtns[idx];
-    if(!btn) return;
-    if(!animate){ ind.style.transition = 'none'; }
-    ind.style.left  = btn.offsetLeft + 'px';
-    ind.style.width = btn.offsetWidth + 'px';
-    if(!animate) requestAnimationFrame(() => ind.style.transition = '');
-  }
-
-  // ── Activate tab by index ──
-  function goTab(idx, fromDrag){
-    idx = Math.max(0, Math.min(tabBtns.length - 1, idx));
-    currentTab = idx;
-    tabBtns.forEach((b,i) => b.classList.toggle('active', i===idx));
-    placeIndicator(idx, true);
-    // Show/hide panels
-    document.querySelectorAll('.tab-panel').forEach((p,i) => {
-      p.classList.toggle('active', i===idx);
+    window.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      wrap.scrollLeft = sl-(e.clientX-sx);
+      wrap.scrollTop  = st-(e.clientY-sy);
     });
-    if(idx === 1) loadUsers();
-  }
-
-  // ── Drag ──
-  let startX=0, dx=0, dragging=false, didMove=false, velX=0, lastX=0, lastT=0;
-
-  function onStart(e){
-    dragging=true; didMove=false; velX=0; dx=0;
-    startX = e.touches ? e.touches[0].clientX : e.clientX;
-    lastX=startX; lastT=Date.now();
-    tabs.classList.add('grabbing');
-    ind.style.transition='none';
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup',   onEnd);
-    window.addEventListener('touchmove', onMove, {passive:false});
-    window.addEventListener('touchend',  onEnd);
-  }
-
-  function onMove(e){
-    if(!dragging) return;
-    const cx = e.touches ? e.touches[0].clientX : e.clientX;
-    dx = cx - startX;
-    const now = Date.now();
-    velX = (cx - lastX) / Math.max(1, now - lastT);
-    lastX=cx; lastT=now;
-    if(Math.abs(dx) > 4){ didMove=true; if(e.cancelable) e.preventDefault(); }
-    if(!didMove) return;
-
-    // Move indicator proportionally between tabs
-    const baseLeft = tabBtns[currentTab].offsetLeft;
-    const baseW    = tabBtns[currentTab].offsetWidth;
-
-    // Direction: dx>0 = dragging right = going to prev tab
-    const dir   = dx > 0 ? -1 : 1;
-    const nextI = currentTab + dir;
-    const nextBtn = tabBtns[nextI];
-
-    if(nextBtn){
-      const totalDist = Math.abs(nextBtn.offsetLeft - baseLeft);
-      const progress  = Math.min(1, Math.abs(dx) / Math.max(totalDist, 80));
-      const newLeft   = baseLeft + (nextBtn.offsetLeft - baseLeft) * progress;
-      const newW      = baseW    + (nextBtn.offsetWidth - baseW)   * progress;
-      ind.style.left  = newLeft + 'px';
-      ind.style.width = newW + 'px';
-    } else {
-      // Rubber-band: small nudge at edge
-      const nudge = dx * 0.12;
-      ind.style.left = (baseLeft + nudge) + 'px';
-    }
-  }
-
-  function onEnd(){
-    if(!dragging) return;
-    dragging=false;
-    tabs.classList.remove('grabbing');
-    ind.style.transition = '';
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup',   onEnd);
-    window.removeEventListener('touchmove', onMove);
-    window.removeEventListener('touchend',  onEnd);
-
-    if(didMove){
-      // Inertia: project dx with velocity
-      const projected = dx + velX * 100;
-      if(projected < -45)      goTab(currentTab + 1, true);
-      else if(projected > 45)  goTab(currentTab - 1, true);
-      else                     goTab(currentTab, true); // snap back
-    }
-  }
-
-  // Click on tabs
-  tabBtns.forEach((btn, i) => {
-    btn.addEventListener('click', () => { if(!didMove) goTab(i); });
-  });
-
-  tabs.addEventListener('mousedown',  onStart);
-  tabs.addEventListener('touchstart', onStart, {passive:true});
-
-  // Init position
-  requestAnimationFrame(() => placeIndicator(0, false));
-}
-
-// ── showView — simple class toggle with fadeUp animation ──
-function showView(v){
-  document.querySelectorAll('.view-slide').forEach(el => {
-    el.classList.toggle('active', el.id === 'view-' + v);
-  });
-}
-
-function switchTab(tab){} // compat stub
-
-
-
-// ══ NAVIGATION STATE ══
-// stack of {type:'cat'|'folder'|'section', id, label, category}
-let navStack = [];
-let activeSection = null; // раздел с файлами
-
-function currentLevel(){ return navStack[navStack.length-1] || null; }
-
-function renderBreadcrumb(){
-  const bc = document.getElementById('breadcrumb');
-  let html = `<span class="bc-item" onclick="goTo(-1)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Категории</span>`;
-  navStack.forEach((item,i)=>{
-    html += `<span class="bc-sep">›</span>`;
-    if(i<navStack.length-1) html+=`<span class="bc-item" onclick="goTo(${i})">${item.label}</span>`;
-    else html+=`<span class="bc-current">${item.label}</span>`;
-  });
-  bc.innerHTML = html;
-}
-
-function goTo(idx){
-  if(idx===-1){
-    navStack=[]; activeSection=null;
-    showView('cats'); renderCats(); renderBreadcrumb(); updateAddBtn();
-    document.getElementById('newCatBtn').style.display='flex';
-    document.getElementById('addBtn').style.display='flex';
-    return;
-  }
-  navStack = navStack.slice(0,idx+1);
-  activeSection = null;
-  const level = navStack[idx];
-  if(level.type==='cat'||level.type==='folder'){
-    showView('items'); loadItems(level.category, level.type==='cat'?null:level.id);
-  }
-  renderBreadcrumb(); updateAddBtn();
-}
-
-function updateAddBtn(){
-  const lbl = document.getElementById('addBtnLabel');
-  const level = currentLevel();
-  if(!level){ lbl.textContent='Добавить'; return; }
-  if(level.type==='section'){ lbl.textContent='Добавить файлы'; document.getElementById('addBtn').onclick=openUploadModal; return; }
-  lbl.textContent='Добавить';
-  document.getElementById('addBtn').onclick=openAddModal;
-}
-
-// ══ CATEGORIES ══
-async function renderCats(){
-  showView('cats');
-  document.getElementById('newCatBtn').style.display='flex';
-  document.getElementById('addBtn').style.display='none';
-  const grid=document.getElementById('catGrid');
-  grid.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
-  await loadCatsFromDB();
-  const counts={};
-  await Promise.all(catsArray.map(async c=>{
-    try{
-      const r=await fetch(`${API}/api/sections?category=${c.slug}&parent_id=null`);
-      const d=await r.json();
-      counts[c.slug]=(d.sections||[]).length;
-    }catch{counts[c.slug]=0;}
-  }));
-  grid.innerHTML='';
-  const frag=document.createDocumentFragment();
-  catsArray.forEach(cat=>{
-    const div=document.createElement('div');
-    div.className='cat-card';
-    div.style.setProperty('--cc',cat.color);
-    const isDefault=cat.is_default;
-    div.innerHTML=`
-      ${!isDefault?`<button class="cat-delete-btn" onclick="askDeleteCat(event,'${cat.id}','${cat.label.replace(/'/g,"\'")}','${cat.slug}')" title="Удалить категорию">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>`:''}
-      <span class="cat-icon">${cat.icon}</span>
-      <div class="cat-name">${cat.label}</div>
-      <div class="cat-count">${counts[cat.slug]||0} элементов</div>`;
-    div.onclick=()=>enterCat(cat.slug,cat.label);
-    frag.appendChild(div);
-  });
-  // Кнопка "Добавить категорию"
-  const addDiv=document.createElement('div');
-  addDiv.className='cat-card cat-add-card';
-  addDiv.innerHTML=`<span class="cat-icon" style="opacity:.4;display:flex;justify-content:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span><div class="cat-name" style="opacity:.55">Новая категория</div>`;
-  addDiv.onclick=openNewCatModal;
-  frag.appendChild(addDiv);
-  grid.appendChild(frag);
-}
-
-function enterCat(slug,label){
-  navStack=[{type:'cat',id:null,label,category:slug}];
-  activeSection=null;
-  showView('items');
-  loadItems(slug,null);
-  renderBreadcrumb();
-  updateAddBtn();
-  document.getElementById('filesTitle').textContent=label;
-  document.getElementById('newCatBtn').style.display='none';
-  document.getElementById('addBtn').style.display='flex';
-}
-
-// ══ ITEMS LIST (папки + разделы) ══
-async function loadItems(category, parentId){
-  const list=document.getElementById('itemsList');
-  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
-  try{
-    const pidParam = parentId ? `&parent_id=${parentId}` : `&parent_id=null`;
-    const r=await fetch(`${API}/api/sections?category=${category}${pidParam}`);
-    const d=await r.json();
-    const items=d.sections||[];
-    if(!items.length){
-      list.innerHTML='<div class="state-empty"><span class="state-empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>Пусто. Создай папку или раздел!</div>';
-      return;
-    }
-    const frag=document.createDocumentFragment();
-    for(const item of items){
-      // Определяем тип: если у него есть дочерние элементы — папка, иначе раздел
-      // Используем поле is_folder (если нет — смотрим по наличию дочерних)
-      const div=document.createElement('div');
-      const isFolder = item.is_folder || false;
-      div.className='item-row'+(isFolder?' is-folder':'');
-      const itemId = item.id;
-      const itemTitle = item.title.replace(/'/g,"\\'");
-      div.innerHTML=`
-        <div class="item-icon ${isFolder?'folder':'section'}">${isFolder
-          ?`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`
-          :`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
-        }</div>
-        <div class="item-name">${item.title}</div>
-        <div class="item-meta">${fmtDate(item.created_at)}</div>
-        <button class="item-del-btn" title="Удалить" onclick="askDeleteItem(event,'${itemId}','${itemTitle}',${isFolder})">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-        </button>
-        <svg class="item-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
-      div.onclick=()=>enterItem(item, isFolder, category);
-      frag.appendChild(div);
-    }
-    list.innerHTML='';
-    list.appendChild(frag);
-  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
-}
-
-function enterItem(item, isFolder, category){
-  if(isFolder){
-    navStack.push({type:'folder',id:item.id,label:item.title,category});
-    showView('items');
-    loadItems(category, item.id);
+    window.addEventListener('mouseup', () => dragging=false);
+  } else if (ext === 'pdf') {
+    body.innerHTML = `<iframe class="fv-iframe" src="${f.url}#toolbar=1&navpanes=0" title="${f.name}"></iframe>`;
+  } else if (['mp4','webm'].includes(ext)) {
+    body.innerHTML = `<video controls autoplay style="max-width:100%;max-height:100%;border-radius:8px;outline:none" src="${f.url}"></video>`;
+  } else if (['mp3','wav','ogg','m4a'].includes(ext)) {
+    body.innerHTML = `<div style="text-align:center;padding:3rem 2rem">
+      <div style="margin-bottom:1.5rem;opacity:.6"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+      <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1.5rem">${f.name}</div>
+      <audio controls autoplay style="width:100%;max-width:420px;outline:none">
+        <source src="${f.url}">
+      </audio>
+    </div>`;
   } else {
-    navStack.push({type:'section',id:item.id,label:item.title,category});
-    activeSection=item;
-    document.getElementById('editorTitle').textContent=item.title;
-    document.getElementById('filesTitle').textContent=item.title;
-    showView('editor');
-    loadSectionFiles(item.id);
-    updateAddBtn();
-  }
-  renderBreadcrumb();
-  updateAddBtn();
-}
-
-// ══ FILES ══
-async function loadSectionFiles(sectionId){
-  const list=document.getElementById('filesList');
-  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
-  try{
-    const r=await fetch(`${API}/api/files-db?section_id=${sectionId}`);
-    const d=await r.json();
-    const files=d.files||[];
-    if(!files.length){list.innerHTML='<div class="state-empty"><span class="state-empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>Файлов нет</div>';return;}
-    const frag=document.createDocumentFragment();
-    files.forEach(f=>{
-      const ext=f.ext||f.original_name?.split('.').pop()||'';
-      const div=document.createElement('div');div.className='file-row';
-      div.innerHTML=`<div class="file-ico">${extIcon(ext)}</div><div class="file-name" title="${f.original_name}">${f.original_name}</div><div class="file-size">${fmtSize(f.size)}</div><a href="${f.url}" target="_blank" class="file-open">↗ Открыть</a><button class="file-del" onclick="deleteFile('${f.id}',this.closest('.file-row'))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg></button>`;
-      frag.appendChild(div);
-    });
-    list.innerHTML='';list.appendChild(frag);
-  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
-}
-
-async function deleteFile(id,row){
-  if(!confirm('Удалить файл?'))return;
-  try{
-    const r=await fetch(`${API}/api/files-db/${id}`,{method:'DELETE',headers:apiH()});
-    const d=await r.json();
-    if(d.success){row.remove();toast('🗑 Файл удалён');}
-    else toast('❌ '+d.error);
-  }catch(e){toast('❌ '+e.message);}
-}
-
-async function deleteCurrentSection(){
-  if(!activeSection)return;
-  if(!confirm(`Удалить «${activeSection.title}» и все файлы?`))return;
-  try{
-    const r=await fetch(`${API}/api/sections/${activeSection.id}`,{method:'DELETE',headers:apiH()});
-    const d=await r.json();
-    if(d.success){toast('🗑 Удалено');goTo(navStack.length-2);}
-    else toast('❌ '+d.error);
-  }catch(e){toast('❌ '+e.message);}
-}
-
-// ══ ADD MODAL ══
-let selectedType='folder', selectedCatForAdd=null;
-
-function openAddModal(){
-  const level=currentLevel();
-  selectedCatForAdd = level?.category||null;
-  // Если мы внутри папки/категории — тип можно выбирать
-  // Если мы на уровне категорий — показываем выбор категории
-  const onRoot = !level;
-  document.getElementById('typeSelectWrap').style.display = onRoot ? '' : '';
-  document.getElementById('catSelectWrap').style.display = onRoot ? '' : 'none';
-  document.getElementById('addTitle').value='';
-  document.getElementById('addMsg').textContent='';
-  selectType('folder');
-
-  if(onRoot){
-    document.getElementById('catSelectWrap').style.display='';
-    const grid=document.getElementById('catSelectGrid');
-    grid.innerHTML='';
-    catsArray.forEach(cat=>{
-      const btn=document.createElement('button');
-      btn.className='cat-opt'+(cat.slug===selectedCatForAdd?' active':'');
-      btn.innerHTML=`<span>${cat.icon}</span>${cat.label}`;
-      btn.onclick=()=>{selectedCatForAdd=cat.slug;grid.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('active'));btn.classList.add('active');};
-      grid.appendChild(btn);
-    });
-  } else {
-    document.getElementById('catSelectWrap').style.display='none';
+    body.innerHTML = `<div class="fv-unsupported">
+      <span class="fv-unsupported-ico">${extIcon(ext)}</span>
+      <div class="fv-unsupported-text">Предпросмотр недоступен для .${ext}<br>Нажми кнопку скачать для открытия файла</div>
+    </div>`;
   }
 
-  document.getElementById('addModalTitle').textContent = level ? `Добавить в «${level.label}»` : 'Добавить';
-  openModal('addModal');
+  viewer.classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
-function selectType(t){
-  selectedType=t;
-  document.getElementById('typeFolder').classList.toggle('active',t==='folder');
-  document.getElementById('typeSection').classList.toggle('active',t==='section');
+function closeViewer() {
+  const viewer = document.getElementById('fileViewer');
+  viewer.classList.remove('show');
+  document.body.style.overflow = '';
+  // Останавливаем медиа
+  viewer.querySelectorAll('video,audio').forEach(m => m.pause());
+  setTimeout(() => { document.getElementById('fvBody').innerHTML = '<div class="fv-loading"><div class="fv-spinner"></div><span>Загружаем...</span></div>'; }, 250);
 }
 
-async function doAdd(){
-  const title=document.getElementById('addTitle').value.trim();
-  const msg=document.getElementById('addMsg');
-  if(!title){msg.textContent='Введи название';return;}
-  const level=currentLevel();
-  const category = level?.category || selectedCatForAdd;
-  if(!category){msg.textContent='Выбери категорию';return;}
-  const parentId = (level?.type==='folder'||level?.type==='cat'&&level.id) ? level.id : null;
-  const isFolder = selectedType==='folder';
-  msg.style.color='var(--muted)';msg.textContent='Создаём...';
-  try{
-    const body={category,title,is_folder:isFolder};
-    if(parentId) body.parent_id=parentId;
-    const r=await fetch(`${API}/api/sections`,{method:'POST',headers:apiH(),body:JSON.stringify(body)});
-    const d=await r.json();
-    if(d.success){
-      closeModal('addModal');toast('✅ Создано');
-      if(!level){enterCat(category,CATS[category].label);}
-      else{loadItems(category,parentId);}
-    } else {msg.style.color='var(--red)';msg.textContent=d.error;}
-  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
+document.getElementById('fvClose').addEventListener('click', closeViewer);
+document.getElementById('fileViewer').addEventListener('click', e => {
+  if(e.target === document.getElementById('fileViewer') || e.target === document.getElementById('fvBody')) closeViewer();
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeViewer();
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
-
-// ══ UPLOAD ══
-let uploadQueue=[];
-
-function openUploadModal(){
-  uploadQueue=[];
-  document.getElementById('uploadQueue').innerHTML='';
-  document.getElementById('uploadMsg').textContent='';
-  document.getElementById('progressBar').style.display='none';
-  document.getElementById('progressFill').style.width='0%';
-  openModal('uploadModal');
-}
-
-const uploadZone=document.getElementById('uploadZone');
-uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag');});
-uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
-uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag');addToQueue(e.dataTransfer.files);});
-
-function addToQueue(files){
-  for(const f of files) if(!uploadQueue.find(x=>x.name===f.name&&x.size===f.size)) uploadQueue.push(f);
-  renderQueue();
-}
-function renderQueue(){
-  const q=document.getElementById('uploadQueue');q.innerHTML='';
-  uploadQueue.forEach((f,i)=>{
-    const ext=f.name.split('.').pop();
-    const div=document.createElement('div');div.className='queue-item';
-    div.innerHTML=`<span>${extIcon(ext)}</span><span class="queue-item-name">${f.name}</span><span class="queue-item-size">${fmtSize(f.size)}</span><button class="queue-remove" onclick="removeQ(${i})">✕</button>`;
-    q.appendChild(div);
-  });
-}
-function removeQ(i){uploadQueue.splice(i,1);renderQueue();}
-
-async function doUpload(){
-  if(!uploadQueue.length){document.getElementById('uploadMsg').textContent='Добавь файлы';return;}
-  if(!activeSection){document.getElementById('uploadMsg').textContent='Нет активного раздела';return;}
-  const btn=document.getElementById('uploadBtn');
-  btn.disabled=true;btn.textContent='Загружаем...';
-  const bar=document.getElementById('progressBar');const fill=document.getElementById('progressFill');
-  const msg=document.getElementById('uploadMsg');
-  bar.style.display='block';
-  let done=0;
-  for(const file of uploadQueue){
-    msg.style.color='var(--muted)';msg.textContent=`Загружаем ${file.name}...`;
-    try{
-      const data=await toBase64(file);
-      const extRaw=file.name.includes('.')?file.name.split('.').pop().toLowerCase():''; const ext=/^[a-z0-9]{1,5}$/.test(extRaw)?extRaw:'';
-      const r=await fetch(`${API}/api/files-db`,{method:'POST',headers:apiH(),body:JSON.stringify({section_id:activeSection.id,original_name:file.name,size:file.size,ext:extRaw||ext,data})});
-      const d=await r.json();
-      if(!d.success)throw new Error(d.error);
-      done++;fill.style.width=Math.round(done/uploadQueue.length*100)+'%';
-    }catch(e){
-      msg.style.color='var(--red)';msg.textContent=`Ошибка: ${e.message}`;
-      btn.disabled=false;btn.textContent='Загрузить';return;
-    }
-  }
-  closeModal('uploadModal');toast(`✅ Загружено ${done} файл${done===1?'':'ов'}`);
-  loadSectionFiles(activeSection.id);
-  btn.disabled=false;btn.textContent='Загрузить';
-}
-
-const toBase64=file=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Ошибка чтения'));r.readAsDataURL(file);});
-
-// ══ DELETE ITEM (папка / раздел) ══
-let deletingItemId = null, deletingItemIsFolder = false;
-
-function askDeleteItem(e, id, title, isFolder){
-  e.stopPropagation();
-  deletingItemId = id;
-  deletingItemIsFolder = isFolder;
-  document.getElementById('deleteItemEmoji').textContent = isFolder ? '📁' : '📄';
-  document.getElementById('deleteItemTitle').textContent = isFolder ? 'Удалить папку?' : 'Удалить раздел?';
-  document.getElementById('deleteItemName').textContent = title;
-  document.getElementById('deleteItemDesc').textContent = isFolder
-    ? ' и все вложенные папки, разделы и файлы будут удалены.'
-    : ' и все файлы внутри будут удалены.';
-  openModal('deleteItemModal');
-}
-
-async function confirmDeleteItem(){
-  if(!deletingItemId) return;
-  const btn = document.getElementById('deleteItemConfirmBtn');
-  btn.disabled = true; btn.textContent = 'Удаляем...';
-  try {
-    const r = await fetch(`${API}/api/sections/${deletingItemId}`, { method:'DELETE', headers:apiH() });
-    const d = await r.json();
-    if(d.success){
-      closeModal('deleteItemModal');
-      toast(`🗑 ${deletingItemIsFolder ? 'Папка' : 'Раздел'} удалён`);
-      // Перезагружаем текущий список
-      const level = currentLevel();
-      if(level) loadItems(level.category, level.type==='folder' ? level.id : null);
-      else renderCats();
-    } else {
-      toast('❌ ' + d.error);
-    }
-  } catch(e){ toast('❌ ' + e.message); }
-  btn.disabled = false; btn.textContent = 'Да, удалить';
-  deletingItemId = null;
-}
-
-// ══ NEW CATEGORY ══
-const ACCENT_COLORS = ['#e8c96a','#ff9ed2','#b48dff','#7eb8ff','#4ecdc4','#7de8a0','#ffb87a','#ff6b6b','#a0c4ff','#c9f0a0'];
-let selectedAccentColor = '#7eb8ff';
-let deletingCatId = null, deletingCatSlug = null;
-
-function openNewCatModal(){
-  document.getElementById('newCatIcon').value='';
-  document.getElementById('newCatLabel').value='';
-  document.getElementById('newCatMsg').textContent='';
-  selectedAccentColor='#7eb8ff';
-  // Render color picker
-  const cp=document.getElementById('colorPicker');
-  cp.innerHTML='';
-  ACCENT_COLORS.forEach(c=>{
-    const btn=document.createElement('button');
-    btn.style.cssText=`width:28px;height:28px;border-radius:50%;background:${c};border:3px solid ${c===selectedAccentColor?'#fff':'transparent'};cursor:pointer;transition:all .18s;`;
-    btn.onclick=(e)=>{e.preventDefault();selectedAccentColor=c;cp.querySelectorAll('button').forEach(b=>b.style.borderColor='transparent');btn.style.borderColor='#fff';};
-    cp.appendChild(btn);
-  });
-  openModal('newCatModal');
-}
-
-async function createCategory(){
-  const label=document.getElementById('newCatLabel').value.trim();
-  const icon=document.getElementById('newCatIcon').value.trim()||'📁';
-  const msg=document.getElementById('newCatMsg');
-  if(!label){msg.textContent='Введи название';return;}
-  msg.style.color='var(--muted)';msg.textContent='Создаём...';
-  try{
-    const r=await fetch(`${API}/api/categories-list`,{method:'POST',headers:apiH(),body:JSON.stringify({label,icon,color:selectedAccentColor})});
-    const d=await r.json();
-    if(d.success){closeModal('newCatModal');toast('✅ Категория создана');renderCats();}
-    else{msg.style.color='var(--red)';msg.textContent=d.error;}
-  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
-}
-
-function askDeleteCat(e, id, label, slug){
-  e.stopPropagation();
-  deletingCatId=id; deletingCatSlug=slug;
-  document.getElementById('deleteCatName').textContent=label;
-  openModal('deleteCatModal');
-}
-
-async function confirmDeleteCat(){
-  if(!deletingCatId)return;
-  const btn=document.getElementById('deleteCatConfirmBtn');
-  btn.disabled=true;btn.textContent='Удаляем...';
-  try{
-    const r=await fetch(`${API}/api/categories-list/${deletingCatId}`,{method:'DELETE',headers:apiH()});
-    const d=await r.json();
-    if(d.success){closeModal('deleteCatModal');toast('🗑 Категория удалена');renderCats();}
-    else toast('❌ '+d.error);
-  }catch(e){toast('❌ '+e.message);}
-  btn.disabled=false;btn.textContent='Да, удалить';
-}
-
-// ══ USERS ══
-let editingUser=null,selectedRole='user';
-
-async function loadUsers(){
-  const q=document.getElementById('usersSearch')?.value?.trim()||'';
-  const list=document.getElementById('usersList');
-  list.innerHTML='<div class="state-load"><div class="spinner"></div>Загрузка...</div>';
-  try{
-    const r=await fetch(`${API}/api/admin/users${q?'?q='+encodeURIComponent(q):''}`,{headers:apiH()});
-    const d=await r.json();
-    const users=d.users||[];
-    if(!users.length){list.innerHTML='<div class="state-empty"><span class="state-empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Администраторов не найдено</div>';return;}
-    const frag=document.createDocumentFragment();
-    users.forEach(u=>{
-      const div=document.createElement('div');div.className='user-row';
-      div.innerHTML=`
-        <div class="user-av">${(u.fernie_username||'?')[0].toUpperCase()}</div>
-        <div class="user-info">
-          <div class="user-nick">${u.fernie_username}</div>
-          <div class="user-date">ID: ${u.fernie_user_id}</div>
-          <div class="user-date">Добавлен: ${fmtDate(u.created_at)}</div>
-        </div>
-        <span class="role-badge role-admin"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;margin-right:3px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Администратор</span>
-        <button class="edit-btn" onclick="removeAdmin('${u.fernie_user_id}','${u.fernie_username}')" title="Удалить из админов">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-        </button>`;
-      frag.appendChild(div);
-    });
-    list.innerHTML='';list.appendChild(frag);
-  }catch(e){list.innerHTML=`<div class="state-empty">Ошибка: ${e.message}</div>`;}
-}
-
-async function removeAdmin(fernieUserId, username){
-  if(!confirm(`Убрать ${username} из администраторов?`)) return;
-  try{
-    const r=await fetch(`${API}/api/admin/rusboc-users/${fernieUserId}`,{method:'DELETE',headers:apiH()});
-    const d=await r.json();
-    if(d.success){toast('🗑 Удалён из админов');loadUsers();}
-    else toast('❌ '+d.error);
-  }catch(e){toast('❌ '+e.message);}
-}
-
-function openEditUser(u){
-  editingUser=u;selectedRole=u.role||'user';
-  document.getElementById('editUsername').value=u.username;
-  document.getElementById('editPassword').value='';
-  document.getElementById('editUserMsg').textContent='';
-  updateRoleBtns();
-  openModal('editUserModal');
-}
-function selectRole(r){selectedRole=r;updateRoleBtns();}
-function updateRoleBtns(){
-  document.getElementById('roleOptUser').classList.toggle('active',selectedRole==='user');
-  document.getElementById('roleOptAdmin').classList.toggle('active',selectedRole==='admin');
-}
-async function saveUser(){
-  if(!editingUser)return;
-  const username=document.getElementById('editUsername').value.trim();
-  const password=document.getElementById('editPassword').value;
-  const msg=document.getElementById('editUserMsg');
-  if(!username){msg.textContent='Введи никнейм';return;}
-  msg.style.color='var(--muted)';msg.textContent='Сохраняем...';
-  const body={username,role:selectedRole};
-  if(password)body.password=password;
-  try{
-    const r=await fetch(`${API}/api/admin/users/${editingUser.id}`,{method:'PATCH',headers:apiH(),body:JSON.stringify(body)});
-    const d=await r.json();
-    if(d.success){closeModal('editUserModal');toast('✅ Сохранено');loadUsers();}
-    else{msg.style.color='var(--red)';msg.textContent=d.error;}
-  }catch(e){msg.style.color='var(--red)';msg.textContent=e.message;}
-}
-
-// ══ MODAL ══
-function openModal(id){document.getElementById(id).classList.add('show');}
-function closeModal(id){document.getElementById(id).classList.remove('show');}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
-
-// ══ TOAST ══
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
 </script>
 </body>
 </html>
