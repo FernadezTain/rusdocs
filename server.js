@@ -134,6 +134,14 @@ app.post("/api/login", async (req, res) => {
 });
 
 // ════ ADMIN: RUSBOC USERS (таблица администраторов) ════
+app.get("/api/admin/users", requireAdmin, async (req, res) => {
+  try {
+    const q = req.query.q ? `&fernie_username=ilike.*${req.query.q}*` : "";
+    const rows = await sb(`RusBocUsers?select=*&order=created_at.desc${q}`);
+    res.json({ success: true, users: rows });
+  } catch (e) { res.json({ success: false, error: e.message }); }
+});
+
 app.get("/api/admin/rusboc-users", requireAdmin, async (req, res) => {
   try {
     const rows = await sb("RusBocUsers?select=*&order=created_at.desc");
