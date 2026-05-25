@@ -252,7 +252,14 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 }
 .cat-card:hover .cat-delete-btn{opacity:1;}
 .cat-delete-btn:hover{background:rgba(255,107,107,0.25);border-color:rgba(255,107,107,0.5);color:var(--red);}
-
+@media(max-width:768px){
+  .cat-delete-btn{
+    opacity:1 !important;
+    background:rgba(255,107,107,0.12);
+    border-color:rgba(255,107,107,0.3);
+    color:var(--red);
+  }
+}
 /* Add category card */
 .cat-add-card{
   border-style:dashed !important;
