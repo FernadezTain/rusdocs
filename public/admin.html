@@ -272,8 +272,18 @@ header{position:sticky;top:0;z-index:100;height:60px;display:flex;align-items:ce
 .state-empty-icon{display:flex;justify-content:center;margin-bottom:.65rem;opacity:.35;}
 
 /* Toast */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(11,14,26,.96);border:1px solid var(--border2);border-radius:100px;padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;backdrop-filter:blur(12px);}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(11,14,26,.96);border:1px solid var(--border2);border-radius:100px;padding:10px 20px;font-size:.82rem;font-weight:500;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap;backdrop-filter:blur(12px);display:flex;align-items:center;gap:8px;}
 #toast.show{opacity:1;}
+.toast-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.toast-icon.ok{background:rgba(78,205,196,0.15);border:1.5px solid var(--teal);}
+.toast-icon.err{background:rgba(255,107,107,0.15);border:1.5px solid var(--red);}
+.toast-icon.del{background:rgba(255,107,107,0.15);border:1.5px solid var(--red);}
+.toast-icon.load{background:rgba(232,201,106,0.12);border:1.5px solid var(--gold);}
+@keyframes checkDraw{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}
+.check-svg{stroke-dasharray:20;stroke-dashoffset:20;animation:checkDraw .35s ease .05s forwards;}
+@keyframes xDraw{from{stroke-dashoffset:16}to{stroke-dashoffset:0}}
+.x-svg{stroke-dasharray:16;stroke-dashoffset:16;animation:xDraw .25s ease forwards;}
+.toast-spin{animation:spin .8s linear infinite;}
 
 @media(max-width:640px){
   #app{padding:1rem;}
@@ -1245,7 +1255,28 @@ function closeModal(id){document.getElementById(id).classList.remove('show');}
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
 
 // ══ TOAST ══
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  clearTimeout(t._t);
+  const icons = {
+    ok:  `<div class="toast-icon ok"><svg class="check-svg" width="10" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8.5 11 1"/></svg></div>`,
+    err: `<div class="toast-icon err"><svg class="x-svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></div>`,
+    del: `<div class="toast-icon del"><svg class="x-svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--red)" stroke-width="2.2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></div>`,
+    load:`<div class="toast-icon load"><svg class="toast-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>`,
+  };
+  // Авто-определяем тип по тексту если не передан
+  if (!type) {
+    if (msg.includes('✅') || msg.includes('Создано') || msg.includes('Сохранено') || msg.includes('Загружено') || msg.includes('создана')) type = 'ok';
+    else if (msg.includes('❌') || msg.includes('Ошибка')) type = 'err';
+    else if (msg.includes('🗑') || msg.includes('удал')) type = 'del';
+    else type = 'load';
+  }
+  // Убираем эмодзи из текста
+  const cleanMsg = msg.replace(/^[🗑✅❌⏳👋]\s*/u, '');
+  t.innerHTML = (icons[type] || '') + `<span>${cleanMsg}</span>`;
+  t.classList.add('show');
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
 </script>
 </body>
 </html>
