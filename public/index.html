@@ -381,8 +381,11 @@ header {
 .file-type-badge {
   width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; font-weight: 700;
   background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+}
+.file-type-badge svg {
+  width: 20px; height: 20px;
+  stroke: var(--muted); flex-shrink: 0;
 }
 .cat-badge {
   display: inline-flex; align-items: center; gap: 5px;
@@ -455,7 +458,8 @@ header {
   grid-column: 1/-1; text-align: center;
   padding: 5rem 2rem;
 }
-.empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+.empty-icon { margin-bottom: 1rem; opacity: .4; display: flex; justify-content: center; }
+.empty-icon svg { stroke: var(--muted); }
 .empty-text { color: var(--muted); font-size: .9rem; }
 
 /* ══════════════════════════════════════
@@ -770,7 +774,7 @@ header {
     <div class="filter-label">Выбери категории</div>
     <div class="filter-chips" id="filterChips">
       <div class="filter-chip active" data-cat="all">
-        <span class="chip-icon">📚</span> Все
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Все
       </div>
     </div>
     <div class="filter-clear">
@@ -879,25 +883,35 @@ FernieID.init('fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f');
 const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
   ? `http://${location.hostname}:3000`
   : '';  // на продакшне (Vercel) — тот же домен
-const EXT_ICONS = {
-  // Документы
-  pdf:'📄', doc:'📝', docx:'📝', odt:'📝', rtf:'📝', txt:'📃', md:'📃',
-  // Таблицы
-  xls:'📈', xlsx:'📈', ods:'📈', csv:'📈',
-  // Презентации
-  ppt:'📊', pptx:'📊', odp:'📊', key:'📊',
-  // Архивы
-  zip:'🗜️', rar:'🗜️', '7z':'🗜️', tar:'🗜️', gz:'🗜️',
-  // Изображения
-  jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️', svg:'🖼️', bmp:'🖼️',
-  // Видео
-  mp4:'🎬', avi:'🎬', mov:'🎬', mkv:'🎬', wmv:'🎬', webm:'🎬',
-  // Аудио
-  mp3:'🎵', wav:'🎵', ogg:'🎵', flac:'🎵', m4a:'🎵',
-  // Код
-  js:'💻', ts:'💻', html:'💻', css:'💻', py:'💻', java:'💻', cpp:'💻', c:'💻', json:'💻', xml:'💻',
+const EXT_GROUPS = {
+  doc:  ['pdf','doc','docx','odt','rtf','txt','md'],
+  sheet:['xls','xlsx','ods','csv'],
+  slide:['ppt','pptx','odp','key'],
+  zip:  ['zip','rar','7z','tar','gz'],
+  img:  ['jpg','jpeg','png','gif','webp','svg','bmp'],
+  video:['mp4','avi','mov','mkv','wmv','webm'],
+  audio:['mp3','wav','ogg','flac','m4a'],
+  code: ['js','ts','html','css','py','java','cpp','c','json','xml'],
 };
-function extIcon(ext) { return EXT_ICONS[ext?.toLowerCase()] || '📄'; }
+const EXT_SVG = {
+  doc:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  sheet:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
+  slide:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  zip:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+  img:  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+  video:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
+  audio:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+};
+function extGroup(ext) {
+  const e = ext?.toLowerCase() || '';
+  for (const [group, exts] of Object.entries(EXT_GROUPS)) {
+    if (exts.includes(e)) return group;
+  }
+  return 'file';
+}
+function extIcon(ext) { return EXT_SVG[extGroup(ext)]; }
 function fmtSize(bytes) {
   if (!bytes) return '—';
   if (bytes < 1024) return bytes + ' Б';
@@ -951,7 +965,7 @@ async function loadFiles() {
   } catch (e) {
     document.getElementById('filesGrid').innerHTML = `
       <div class="state-empty">
-        <div class="empty-icon">⚠️</div>
+        <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
         <div class="empty-text">Не удалось загрузить файлы</div>
       </div>`;
   }
@@ -1028,7 +1042,25 @@ function getFiltered() {
   return files;
 }
 
-function makeCard(f, i) {
+async function downloadFile(url, name) {
+  try {
+    showToast('⏳ Скачиваем...');
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('✅ Скачано!');
+  } catch (e) {
+    // Фолбэк — просто открываем в новой вкладке
+    window.open(url, '_blank');
+  }
+}
+
+function makeCard(f, i)
+{
   const div = document.createElement('div');
   div.className = 'file-card';
   const viewable = ['pdf','jpg','jpeg','png','gif','webp','bmp','svg','mp4','webm','mp3','wav','ogg','m4a'];
@@ -1052,19 +1084,26 @@ function makeCard(f, i) {
       <span>${fmtDate(f.modified)}</span>
     </div>
     <div class="card-actions">
-      ${canPreview ? `
-        <button class="card-btn card-btn-open">
+      ${canPreview ? `<button class="card-btn card-btn-open">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           Открыть
         </button>` : ''}
-      <a class="card-btn card-btn-dl" href="${f.url}" download target="_blank" rel="noopener" onclick="event.stopPropagation()">
+      <button class="card-btn card-btn-dl">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Скачать
-      </a>
+      </button>
     </div>`;
+
   if (canPreview) {
-    div.querySelector('.card-btn-open').addEventListener('click', () => openViewer(f));
+    div.querySelector('.card-btn-open').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openViewer(f);
+    });
   }
+  div.querySelector('.card-btn-dl').addEventListener('click', (e) => {
+    e.stopPropagation();
+    downloadFile(f.url, f.name);
+  });
   return div;
 }
 
@@ -1081,7 +1120,7 @@ function renderGrid() {
     if (!files.length) {
       grid.innerHTML = `
         <div class="state-empty">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
           <div class="empty-text">Ничего не найдено.<br>Попробуй другой запрос или сброс фильтров.</div>
         </div>`;
       return;
@@ -1207,7 +1246,7 @@ function openViewer(f) {
     body.innerHTML = `<video controls autoplay style="max-width:100%;max-height:100%;border-radius:8px;outline:none" src="${f.url}"></video>`;
   } else if (['mp3','wav','ogg','m4a'].includes(ext)) {
     body.innerHTML = `<div style="text-align:center;padding:3rem 2rem">
-      <div style="font-size:4rem;margin-bottom:1.5rem">🎵</div>
+      <div style="margin-bottom:1.5rem;opacity:.6"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
       <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1.5rem">${f.name}</div>
       <audio controls autoplay style="width:100%;max-width:420px;outline:none">
         <source src="${f.url}">
