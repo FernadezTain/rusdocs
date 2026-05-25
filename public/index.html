@@ -598,8 +598,66 @@ header {
   z-index: 9999; opacity: 0; pointer-events: none;
   transition: opacity .3s; white-space: nowrap;
   backdrop-filter: blur(12px);
+  display: flex; align-items: center; gap: 8px;
 }
 #toast.show { opacity: 1; }
+
+.toast-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.toast-icon.ok {
+  background: rgba(78,205,196,0.15);
+  border: 1.5px solid var(--teal);
+}
+.toast-icon.err {
+  background: rgba(255,107,107,0.15);
+  border: 1.5px solid #ff6b6b;
+}
+.toast-icon.load {
+  background: rgba(232,201,106,0.12);
+  border: 1.5px solid var(--gold);
+}
+.toast-icon.bye {
+  background: rgba(180,141,255,0.12);
+  border: 1.5px solid var(--purple);
+}
+
+/* Анимированная галочка */
+@keyframes checkDraw {
+  from { stroke-dashoffset: 20; }
+  to   { stroke-dashoffset: 0; }
+}
+.check-svg {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: checkDraw .35s ease .05s forwards;
+}
+
+/* Анимированный крестик */
+@keyframes xDraw {
+  from { stroke-dashoffset: 16; }
+  to   { stroke-dashoffset: 0; }
+}
+.x-svg {
+  stroke-dasharray: 16;
+  stroke-dashoffset: 16;
+  animation: xDraw .25s ease forwards;
+}
+
+/* Спиннер для load */
+.toast-spin {
+  animation: spin .8s linear infinite;
+}
+
+/* Bye — волна */
+@keyframes byeWave {
+  0%,100% { transform: rotate(0deg); }
+  25%      { transform: rotate(20deg); }
+  75%      { transform: rotate(-15deg); }
+}
+.bye-svg { animation: byeWave .6s ease; }
 
 /* ══════════════════════════════════════
    FILE VIEWER
@@ -1048,7 +1106,7 @@ function getFiltered() {
 
 async function downloadFile(url, name) {
   try {
-    showToast('⏳ Скачиваем...');
+    showToast('Скачиваем...', 'load');
     const res = await fetch(url);
     const blob = await res.blob();
     const a = document.createElement('a');
@@ -1056,9 +1114,8 @@ async function downloadFile(url, name) {
     a.download = name;
     a.click();
     URL.revokeObjectURL(a.href);
-    showToast('✅ Скачано!');
+    showToast('Скачано!', 'ok');
   } catch (e) {
-    // Фолбэк — просто открываем в новой вкладке
     window.open(url, '_blank');
   }
 }
@@ -1165,7 +1222,7 @@ document.getElementById('regPass2').addEventListener('keydown', e => {
 async function doLogin() {
   closeAuthModal();
   if (typeof FernieID === 'undefined') {
-    showToast('❌ FernieID SDK не загружен');
+    showToast('FernieID SDK не загружен', 'err');
     return;
   }
   const data = await FernieID.login();
@@ -1180,7 +1237,7 @@ async function doLogin() {
     const user = { ...data, isAdmin: check.isAdmin };
     localStorage.setItem('fernieid_user', JSON.stringify(user));
     setUser(user);
-    showToast('✅ Добро пожаловать, ' + data.username + '!');
+    showToast('Добро пожаловать, ' + data.username + '!', 'ok');
   }
 }
 
@@ -1209,7 +1266,7 @@ function doLogout() {
   document.getElementById('logoutBtn').style.display = 'none';
   const adminBtn = document.getElementById('adminBtn');
   if (adminBtn) adminBtn.style.display = 'none';
-  showToast('👋 Вы вышли из аккаунта');
+  showToast('Вы вышли из аккаунта', 'bye');
 }
 
 // ══ FILE VIEWER ══
@@ -1284,10 +1341,19 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closeViewer();
 });
 
-function showToast(msg) {
+function showToast(msg, type) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
   clearTimeout(t._t);
+
+  const icons = {
+    ok:  `<div class="toast-icon ok"><svg class="check-svg" width="10" height="10" viewBox="0 0 12 10" fill="none" stroke="var(--teal)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 5 4.5 8.5 11 1"/></svg></div>`,
+    err: `<div class="toast-icon err"><svg class="x-svg" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="#ff6b6b" stroke-width="2.2" stroke-linecap="round"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></div>`,
+    load:`<div class="toast-icon load"><svg class="toast-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg></div>`,
+    bye: `<div class="toast-icon bye"><svg class="bye-svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>`,
+  };
+
+  t.innerHTML = (icons[type] || '') + `<span>${msg}</span>`;
+  t.classList.add('show');
   t._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 </script>
