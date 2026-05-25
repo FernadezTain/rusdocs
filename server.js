@@ -18,8 +18,12 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(cors({ origin: true, credentials: true }));
 
 const SB_URL     = process.env.SUPABASE_URL;
-const SB_KEY     = process.env.SUPABASE_KEY;          // anon key — для REST API
-const SB_SERVICE = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY; // service_role — для Storage
+const SB_KEY     = process.env.SUPABASE_KEY;
+const SB_SERVICE = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
+
+// FernieID — для верификации токенов
+const FID_URL = "https://ferniex-id.vercel.app";
+const FID_API_KEY = process.env.FERNIEID_API_KEY; // ключ твоего приложения
 
 const sbH = () => ({
   apikey: SB_KEY,
@@ -38,21 +42,63 @@ async function sb(endpoint, opts = {}) {
   try { return JSON.parse(text); } catch { return text; }
 }
 
-// Middleware: проверка что юзер — админ (по userId в заголовке)
-async function requireAdmin(req, res, next) {
-  const userId = req.headers["x-user-id"];
-  if (!userId) return res.status(403).json({ success: false, error: "Нет доступа" });
+// Проверяет FernieID токен и возвращает { userId, username, role }
+async function verifyFernieToken(userId, username) {
   try {
-    const rows = await sb(`users?id=eq.${userId}&select=role`);
-    if (!Array.isArray(rows) || !rows[0] || rows[0].role !== "admin")
-      return res.status(403).json({ success: false, error: "Только для администраторов" });
+    const res = await fetch(`${FID_URL}/api/verify-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, username })
+    });
+    const data = await res.json();
+    if (!data.success) return null;
+    return data;
+  } catch { return null; }
+}
+
+// Проверяет что fernieId есть в таблице RusBocUsers (Supabase RusDocs)
+async function isRusBocAdmin(fernieUserId) {
+  try {
+    const rows = await sb(`RusBocUsers?fernie_user_id=eq.${fernieUserId}&select=fernie_user_id`);
+    return Array.isArray(rows) && rows.length > 0;
+  } catch { return false; }
+}
+// Middleware: проверка через FernieID + таблицу RusBocUsers
+async function requireAdmin(req, res, next) {
+  const fernieUserId = req.headers["x-fernie-user-id"];
+  const fernieUsername = req.headers["x-fernie-username"];
+  if (!fernieUserId || !fernieUsername)
+    return res.status(403).json({ success: false, error: "Нет доступа" });
+  try {
+    // 1. Верифицируем токен в FernieID
+    const verified = await verifyFernieToken(fernieUserId, fernieUsername);
+    if (!verified) return res.status(403).json({ success: false, error: "Недействительный токен" });
+    // 2. Проверяем наличие в RusBocUsers
+    const admin = await isRusBocAdmin(fernieUserId);
+    if (!admin) return res.status(403).json({ success: false, error: "Только для администраторов" });
+    req.fernieUser = verified;
     next();
   } catch (e) {
     return res.status(403).json({ success: false, error: e.message });
   }
 }
 
-// ════ AUTH ════
+// ════ AUTH — верификация FernieID сессии ════
+// Клиент передаёт { userId, username } после входа через FernieID SDK
+app.post("/api/auth/fernie-check", async (req, res) => {
+  const { userId, username } = req.body || {};
+  if (!userId || !username) return res.json({ success: false, error: "Нет данных" });
+  try {
+    const verified = await verifyFernieToken(userId, username);
+    if (!verified) return res.json({ success: false, error: "Недействительный токен" });
+    const admin = await isRusBocAdmin(userId);
+    return res.json({ success: true, userId, username, isAdmin: admin });
+  } catch (e) {
+    return res.json({ success: false, error: e.message });
+  }
+});
+
+// ════ СТАРЫЙ AUTH — удалён, используем FernieID ════
 app.post("/api/register", async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.json({ success: false, error: "Заполни все поля" });
@@ -87,26 +133,31 @@ app.post("/api/login", async (req, res) => {
   } catch (e) { return res.json({ success: false, error: e.message }); }
 });
 
-// ════ ADMIN: USERS ════
-app.get("/api/admin/users", requireAdmin, async (req, res) => {
+// ════ ADMIN: RUSBOC USERS (таблица администраторов) ════
+app.get("/api/admin/rusboc-users", requireAdmin, async (req, res) => {
   try {
-    const q = req.query.q ? `&username=ilike.*${req.query.q}*` : "";
-    const rows = await sb(`users?select=id,username,role,created_at&order=created_at.desc${q}`);
+    const rows = await sb("RusBocUsers?select=*&order=created_at.desc");
     res.json({ success: true, users: rows });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
 
-app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
-  const { username, password, role } = req.body || {};
-  const update = {};
-  if (username) update.username = username;
-  if (role)     update.role = role;
-  if (password) update.password_hash = await bcrypt.hash(password, 10);
+app.post("/api/admin/rusboc-users", requireAdmin, async (req, res) => {
+  const { fernie_user_id, fernie_username } = req.body || {};
+  if (!fernie_user_id || !fernie_username)
+    return res.json({ success: false, error: "Нет данных" });
   try {
-    const rows = await sb(`users?id=eq.${req.params.id}`, {
-      method: "PATCH", body: JSON.stringify(update)
+    const rows = await sb("RusBocUsers", {
+      method: "POST",
+      body: JSON.stringify({ fernie_user_id, fernie_username, created_at: new Date().toISOString() })
     });
     res.json({ success: true, user: rows[0] });
+  } catch (e) { res.json({ success: false, error: e.message }); }
+});
+
+app.delete("/api/admin/rusboc-users/:fernieUserId", requireAdmin, async (req, res) => {
+  try {
+    await sb(`RusBocUsers?fernie_user_id=eq.${req.params.fernieUserId}`, { method: "DELETE" });
+    res.json({ success: true });
   } catch (e) { res.json({ success: false, error: e.message }); }
 });
 
