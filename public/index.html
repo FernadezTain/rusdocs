@@ -877,6 +877,8 @@ header {
 <script src="https://ferniex-id.vercel.app/sdk/fernieid-sdk.js"></script>
 <script>
 FernieID.init('fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f');
+console.log('скрипт загружен');
+document.addEventListener('click', e => console.log('клик на:', e.target.className, e.target.tagName));
 // Авто-определяем API URL:
 // - на Vercel фронт и бэк на одном домене → ''
 // - если открываешь index.html напрямую из файла → нужен явный адрес сервера
