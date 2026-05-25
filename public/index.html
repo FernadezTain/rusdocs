@@ -403,15 +403,35 @@ header {
 }
 .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--muted2); flex-shrink: 0; }
 
-.card-dl {
-  display: flex; align-items: center; gap: 7px;
+.card-actions {
+  display: flex; gap: .5rem;
   margin-top: auto; padding-top: .65rem;
   border-top: 1px solid var(--border);
-  font-size: .75rem; font-weight: 600;
   opacity: 0; transition: opacity .2s;
+}
+.file-card:hover .card-actions { opacity: 1; }
+.card-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  font-size: .72rem; font-weight: 600;
+  cursor: pointer; transition: all .18s;
+  text-decoration: none; border: none;
+  font-family: 'Outfit', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.card-btn-open {
+  background: rgba(110,174,255,0.1);
+  border: 1px solid rgba(110,174,255,0.25);
+  color: var(--blue);
+}
+.card-btn-open:hover { background: rgba(110,174,255,0.2); }
+.card-btn-dl {
+  background: rgba(232,201,106,0.1);
+  border: 1px solid rgba(232,201,106,0.25);
   color: var(--gold);
 }
-.file-card:hover .card-dl { opacity: 1; }
+.card-btn-dl:hover { background: rgba(232,201,106,0.2); }
 
 /* ══════════════════════════════════════
    STATES
@@ -687,6 +707,7 @@ header {
   .hero-eyebrow, .hero h1, .hero p, .search-wrap { animation: none !important; }
   /* Отключаем hover-эффекты на тач-устройствах */
   .file-card:active { background: rgba(255,255,255,0.06); }
+.card-actions { opacity: 1 !important; }
 }
 </style>
 </head>
@@ -1008,22 +1029,13 @@ function getFiltered() {
 }
 
 function makeCard(f, i) {
-  const a = document.createElement('a');
-  a.className = 'file-card';
-  a.href = f.url;
-  a.rel = 'noopener';
-  // Открываем во вьюере если поддерживается, иначе новая вкладка
+  const div = document.createElement('div');
+  div.className = 'file-card';
   const viewable = ['pdf','jpg','jpeg','png','gif','webp','bmp','svg','mp4','webm','mp3','wav','ogg','m4a'];
-  if (viewable.includes(f.ext?.toLowerCase())) {
-    a.href = '#';
-    a.onclick = (e) => { e.preventDefault(); openViewer(f); };
-  } else {
-    a.target = '_blank';
-  }
-  // На мобилке не используем animation-delay
+  const canPreview = viewable.includes(f.ext?.toLowerCase());
   const isMobile = window.innerWidth <= 640;
-  a.style.cssText = `--card-accent:${f.categoryColor};${isMobile ? '' : `animation-delay:${Math.min(i * 0.04, 0.4)}s`}`;
-  a.innerHTML = `
+  div.style.cssText = `--card-accent:${f.categoryColor};${isMobile ? '' : `animation-delay:${Math.min(i * 0.04, 0.4)}s`}`;
+  div.innerHTML = `
     <div class="card-top">
       <div class="file-type-badge">${extIcon(f.ext)}</div>
       <span class="cat-badge"
@@ -1039,11 +1051,21 @@ function makeCard(f, i) {
       <div class="meta-dot"></div>
       <span>${fmtDate(f.modified)}</span>
     </div>
-    <div class="card-dl">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Скачать файл
+    <div class="card-actions">
+      ${canPreview ? `
+        <button class="card-btn card-btn-open">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Открыть
+        </button>` : ''}
+      <a class="card-btn card-btn-dl" href="${f.url}" download target="_blank" rel="noopener" onclick="event.stopPropagation()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Скачать
+      </a>
     </div>`;
-  return a;
+  if (canPreview) {
+    div.querySelector('.card-btn-open').addEventListener('click', () => openViewer(f));
+  }
+  return div;
 }
 
 let _renderTimer = null;
