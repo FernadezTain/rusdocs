@@ -576,6 +576,97 @@ header {
 #toast.show { opacity: 1; }
 
 /* ══════════════════════════════════════
+   FILE VIEWER
+══════════════════════════════════════ */
+#fileViewer {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+#fileViewer.show { opacity: 1; pointer-events: all; }
+
+.fv-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 20px;
+  background: rgba(6,8,15,0.8);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.fv-name {
+  flex: 1; font-size: .88rem; font-weight: 600;
+  color: var(--text); overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.fv-meta { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+.fv-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 9px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted); cursor: pointer;
+  transition: all .18s; flex-shrink: 0;
+  text-decoration: none; font-size: .85rem;
+}
+.fv-btn:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+.fv-btn.gold { background: rgba(232,201,106,0.1); border-color: rgba(232,201,106,0.3); color: var(--gold); }
+.fv-btn.gold:hover { background: rgba(232,201,106,0.2); }
+
+.fv-body {
+  flex: 1; display: flex; align-items: center;
+  justify-content: center; overflow: hidden; position: relative;
+}
+
+/* Изображения */
+.fv-img-wrap {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; cursor: zoom-in;
+}
+.fv-img-wrap.zoomed { cursor: zoom-out; overflow: auto; align-items: flex-start; justify-content: flex-start; }
+.fv-img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: transform .3s cubic-bezier(.22,.68,0,1.3);
+  user-select: none; -webkit-user-select: none;
+  pointer-events: none;
+}
+.fv-img-wrap.zoomed .fv-img {
+  max-width: none; max-height: none;
+  transform: scale(2);
+  transform-origin: top left;
+  pointer-events: all;
+}
+
+/* PDF / iframe */
+.fv-iframe {
+  width: 100%; height: 100%;
+  border: none; background: #fff;
+}
+
+/* Неподдерживаемый файл */
+.fv-unsupported {
+  text-align: center; padding: 3rem 2rem;
+}
+.fv-unsupported-ico { font-size: 4rem; margin-bottom: 1rem; display: block; opacity: .5; }
+.fv-unsupported-text { color: var(--muted); font-size: .9rem; line-height: 1.7; }
+
+/* Загрузка */
+.fv-loading {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1rem; color: var(--muted);
+}
+.fv-spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2px solid rgba(232,201,106,0.15);
+  border-top-color: var(--gold);
+  animation: spin .9s linear infinite;
+}
+
+/* ══════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════ */
 @media (max-width: 640px) {
@@ -735,6 +826,23 @@ header {
       <div class="form-msg" id="regMsg" style="color:#ff6b6b"></div>
       <button class="form-submit" onclick="doRegister()">Создать аккаунт →</button>
     </form>
+  </div>
+</div>
+
+<!-- FILE VIEWER -->
+<div id="fileViewer">
+  <div class="fv-header">
+    <div class="fv-name" id="fvName">Файл</div>
+    <div class="fv-meta" id="fvMeta"></div>
+    <a id="fvDownload" href="#" target="_blank" class="fv-btn gold" title="Скачать">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </a>
+    <button class="fv-btn" id="fvClose" title="Закрыть">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="fv-body" id="fvBody">
+    <div class="fv-loading"><div class="fv-spinner"></div><span>Загружаем...</span></div>
   </div>
 </div>
 
@@ -903,8 +1011,15 @@ function makeCard(f, i) {
   const a = document.createElement('a');
   a.className = 'file-card';
   a.href = f.url;
-  a.target = '_blank';
   a.rel = 'noopener';
+  // Открываем во вьюере если поддерживается, иначе новая вкладка
+  const viewable = ['pdf','jpg','jpeg','png','gif','webp','bmp','svg','mp4','webm','mp3','wav','ogg','m4a'];
+  if (viewable.includes(f.ext?.toLowerCase())) {
+    a.href = '#';
+    a.onclick = (e) => { e.preventDefault(); openViewer(f); };
+  } else {
+    a.target = '_blank';
+  }
   // На мобилке не используем animation-delay
   const isMobile = window.innerWidth <= 640;
   a.style.cssText = `--card-accent:${f.categoryColor};${isMobile ? '' : `animation-delay:${Math.min(i * 0.04, 0.4)}s`}`;
@@ -1031,6 +1146,78 @@ function doLogout() {
   if (adminBtn) adminBtn.style.display = 'none';
   showToast('👋 Вы вышли из аккаунта');
 }
+
+// ══ FILE VIEWER ══
+function openViewer(f) {
+  const viewer = document.getElementById('fileViewer');
+  const body   = document.getElementById('fvBody');
+  const ext    = f.ext?.toLowerCase() || '';
+
+  document.getElementById('fvName').textContent = f.name;
+  document.getElementById('fvMeta').textContent = [f.ext?.toUpperCase(), fmtSize(f.size)].filter(Boolean).join(' · ');
+  document.getElementById('fvDownload').href = f.url;
+
+  // Рендер содержимого
+  if (['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) {
+    body.innerHTML = `<div class="fv-img-wrap" id="fvImgWrap">
+      <img class="fv-img" id="fvImg" src="${f.url}" alt="${f.name}">
+    </div>`;
+    const wrap = document.getElementById('fvImgWrap');
+    const img  = document.getElementById('fvImg');
+    // Зум по клику
+    wrap.addEventListener('click', () => wrap.classList.toggle('zoomed'));
+    // Перетаскивание при зуме
+    let dragging=false, sx=0, sy=0, sl=0, st=0;
+    wrap.addEventListener('mousedown', e => {
+      if(!wrap.classList.contains('zoomed')) return;
+      dragging=true; sx=e.clientX; sy=e.clientY;
+      sl=wrap.scrollLeft; st=wrap.scrollTop;
+    });
+    window.addEventListener('mousemove', e => {
+      if(!dragging) return;
+      wrap.scrollLeft = sl-(e.clientX-sx);
+      wrap.scrollTop  = st-(e.clientY-sy);
+    });
+    window.addEventListener('mouseup', () => dragging=false);
+  } else if (ext === 'pdf') {
+    body.innerHTML = `<iframe class="fv-iframe" src="${f.url}#toolbar=1&navpanes=0" title="${f.name}"></iframe>`;
+  } else if (['mp4','webm'].includes(ext)) {
+    body.innerHTML = `<video controls autoplay style="max-width:100%;max-height:100%;border-radius:8px;outline:none" src="${f.url}"></video>`;
+  } else if (['mp3','wav','ogg','m4a'].includes(ext)) {
+    body.innerHTML = `<div style="text-align:center;padding:3rem 2rem">
+      <div style="font-size:4rem;margin-bottom:1.5rem">🎵</div>
+      <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1.5rem">${f.name}</div>
+      <audio controls autoplay style="width:100%;max-width:420px;outline:none">
+        <source src="${f.url}">
+      </audio>
+    </div>`;
+  } else {
+    body.innerHTML = `<div class="fv-unsupported">
+      <span class="fv-unsupported-ico">${extIcon(ext)}</span>
+      <div class="fv-unsupported-text">Предпросмотр недоступен для .${ext}<br>Нажми кнопку скачать для открытия файла</div>
+    </div>`;
+  }
+
+  viewer.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewer() {
+  const viewer = document.getElementById('fileViewer');
+  viewer.classList.remove('show');
+  document.body.style.overflow = '';
+  // Останавливаем медиа
+  viewer.querySelectorAll('video,audio').forEach(m => m.pause());
+  setTimeout(() => { document.getElementById('fvBody').innerHTML = '<div class="fv-loading"><div class="fv-spinner"></div><span>Загружаем...</span></div>'; }, 250);
+}
+
+document.getElementById('fvClose').addEventListener('click', closeViewer);
+document.getElementById('fileViewer').addEventListener('click', e => {
+  if(e.target === document.getElementById('fileViewer') || e.target === document.getElementById('fvBody')) closeViewer();
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeViewer();
+});
 
 function showToast(msg) {
   const t = document.getElementById('toast');
