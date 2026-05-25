@@ -741,7 +741,9 @@ header {
 <!-- TOAST -->
 <div id="toast"></div>
 
+<script src="https://ferniex-id.vercel.app/sdk.js"></script>
 <script>
+FernieID.init('fid_48919a000140bf6b7e7767281ffc31329647d6a5c133fe8f');
 // Авто-определяем API URL:
 // - на Vercel фронт и бэк на одном домене → ''
 // - если открываешь index.html напрямую из файла → нужен явный адрес сервера
@@ -788,12 +790,20 @@ let searchQ = '';
 // ══ INIT ══
 (async () => {
   try {
-    const saved = JSON.parse(localStorage.getItem('methbook_user'));
-    if (saved) setUser(saved);
+    const saved = JSON.parse(localStorage.getItem('fernieid_user'));
+    if (saved) {
+      const r = await fetch(`${API}/api/auth/fernie-check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: saved.userId, username: saved.username })
+      });
+      const d = await r.json();
+      if (d.success) setUser({ ...saved, isAdmin: d.isAdmin });
+      else localStorage.removeItem('fernieid_user');
+    }
   } catch {}
   await Promise.all([loadCategories(), loadFiles()]);
 })();
-
 async function loadCategories() {
   try {
     const res = await fetch(`${API}/api/categories`);
@@ -973,70 +983,28 @@ document.getElementById('regPass2').addEventListener('keydown', e => {
 });
 
 async function doLogin() {
-  const username = document.getElementById('loginUser').value.trim();
-  const password = document.getElementById('loginPass').value;
-  const msg = document.getElementById('loginMsg');
-  if (!username || !password) { msg.textContent = 'Заполни все поля'; return; }
-  msg.style.color = 'var(--muted)'; msg.textContent = 'Проверяем...';
-  try {
-    const res = await fetch(`${API}/api/login`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username, password })
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      console.error('Login error:', res.status, text);
-      msg.style.color = '#ff6b6b';
-      msg.textContent = `Ошибка сервера (${res.status}) — открой F12 → Console`;
-      return;
-    }
-    const data = await res.json();
-    if (data.success) {
-      setUser(data.user);
-      localStorage.setItem('methbook_user', JSON.stringify(data.user));
-      closeAuthModal();
-      showToast('✅ Добро пожаловать, ' + data.user.username + '!');
-    } else {
-      msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка входа';
-    }
-  } catch (e) {
-    console.error('Login fetch error:', e);
-    msg.style.color = '#ff6b6b';
-    msg.textContent = 'Нет связи с сервером — открой F12 → Console';
+  closeAuthModal();
+  if (typeof FernieID === 'undefined') {
+    showToast('❌ FernieID SDK не загружен');
+    return;
+  }
+  const data = await FernieID.login();
+  if (!data || !data.success) return;
+  const r = await fetch(`${API}/api/auth/fernie-check`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: data.userId, username: data.username })
+  });
+  const check = await r.json();
+  if (check.success) {
+    const user = { ...data, isAdmin: check.isAdmin };
+    localStorage.setItem('fernieid_user', JSON.stringify(user));
+    setUser(user);
+    showToast('✅ Добро пожаловать, ' + data.username + '!');
   }
 }
 
-async function doRegister() {
-  const username = document.getElementById('regUser').value.trim();
-  const password = document.getElementById('regPass').value;
-  const pass2 = document.getElementById('regPass2').value;
-  const msg = document.getElementById('regMsg');
-  if (!username || !password) { msg.textContent = 'Заполни все поля'; return; }
-  if (password !== pass2) { msg.textContent = 'Пароли не совпадают'; return; }
-  if (password.length < 4) { msg.textContent = 'Пароль минимум 4 символа'; return; }
-  msg.style.color = 'var(--muted)'; msg.textContent = 'Создаём аккаунт...';
-  try {
-    const res = await fetch(`${API}/api/register`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    if (data.success) {
-      msg.style.color = '#4ecdc4'; msg.textContent = '✓ Аккаунт создан!';
-      setTimeout(() => {
-        switchTab('login');
-        document.getElementById('loginUser').value = username;
-        msg.textContent = '';
-      }, 1000);
-    } else {
-      msg.style.color = '#ff6b6b'; msg.textContent = data.error || 'Ошибка';
-    }
-  } catch (e) {
-    console.error('Register fetch error:', e);
-    msg.style.color = '#ff6b6b';
-    msg.textContent = 'Нет связи с сервером — открой F12 → Console';
-  }
-}
+async function doRegister() { await doLogin(); }
 
 function setUser(user) {
   currentUser = user;
@@ -1046,17 +1014,16 @@ function setUser(user) {
   document.getElementById('userAv').textContent = (user.username||'?')[0].toUpperCase();
   document.getElementById('userName').textContent = user.username;
   const roleEl = document.getElementById('userRole');
-  roleEl.textContent = user.role === 'admin' ? 'Администратор' : 'Пользователь';
-  roleEl.className = 'user-role role-' + (user.role || 'user');
+  roleEl.textContent = user.isAdmin ? 'Администратор' : 'Пользователь';
+  roleEl.className = 'user-role role-' + (user.isAdmin ? 'admin' : 'user');
   document.getElementById('logoutBtn').style.display = 'inline-block';
-  // Показываем кнопку админ-панели только администраторам
   const adminBtn = document.getElementById('adminBtn');
-  if (adminBtn) adminBtn.style.display = user.role === 'admin' ? 'flex' : 'none';
+  if (adminBtn) adminBtn.style.display = user.isAdmin ? 'flex' : 'none';
 }
 
 function doLogout() {
   currentUser = null;
-  localStorage.removeItem('methbook_user');
+  localStorage.removeItem('fernieid_user');
   document.getElementById('loginBtn').style.display = '';
   document.getElementById('userChip').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
